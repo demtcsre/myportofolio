@@ -25,7 +25,7 @@ theme.addEventListener('click', function () {
 
 
 // |--------------------------------------------------------------------| //
-// | BAGIAN NAVBAR DI HEADER KETIKA DALAM MOBILE DISPLAY (WIDTH <600PX) | //
+// | BAGIAN NAVBAR DI HEADER KETIKA DALAM MOBILE DISPLAY (WIDTH <760PX) | //
 // |--------------------------------------------------------------------| //
 var toggle = document.querySelector('.nav-toggle');
 var panel = document.getElementById('nav-panel');
