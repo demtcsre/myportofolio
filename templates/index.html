@@ -8,14 +8,40 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/static/css/style.css">
+    <script>
+        try { var t = localStorage.getItem('theme');
+            if (t) document.documentElement.style.colorScheme = t; } catch (e) {}
+    </script>
+    <script src="/static/js/script.js" defer></script>
 </head>
 <body>
     <header class="site-header">
         <div class="container">
             <a href="#profile" class="brand">Ahmad Rizki Daffaa</a>
-            <nav>
-                <a href="#profile">Profile</a>
-            </nav>
+            <div class="nav-wrap">
+                <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-panel" aria-label="Menu">
+                    <svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true">
+                        <path d="M2 5h16M2 10h16M2 15h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </button>
+                <div class="nav-panel" id="nav-panel">
+                    <nav>
+                        <a href="#profile">Profile</a>
+                        <a href="#experience">Experience</a>
+                        <a href="#achievement">Achievement</a>
+                        <a href="#project">Project</a>
+                    </nav>
+                    <button class="theme" type="button" data-scheme="light" aria-label="Toggle light and dark theme">
+                        <svg class="icon sun" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                            <circle cx="12" cy="12" r="4.5"/>
+                            <path d="M12 1.5v2.5M12 20v2.5M3.9 3.9l1.8 1.8M18.3 18.3l1.8 1.8M1.5 12h2.5M20 12h2.5M3.9 20.1l1.8-1.8M18.3 5.7l1.8-1.8"/>
+                        </svg>
+                        <svg class="icon moon" viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">
+                            <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
         </div>
     </header>
 
@@ -31,7 +57,7 @@
                     <img class="avatar" src="/static/img/ardaf.png" alt="Photo of Ahmad Rizki Daffaa">
                 </div>
                 <div class="hero-details">
-                    <p class="bio">CS student at Universitas Indonesia for a year, passionate in Cybersecurity and Data Science while also being a teaching assistant in Programming Foundation 1 (DDP1) course.</p>
+                    <p class="bio">Second-year CS student at Universitas Indonesia, passionate in Cybersecurity and Data Science while also being a teaching assistant in Programming Foundation 1 (DDP1) course.</p>
                     <dl class="meta-list">
                         <div class="meta-row">
                             <dt>NPM</dt>
@@ -50,6 +76,84 @@
                 </div>
             </div>
         </section>
+
+        <section class="section" id="experience">
+            <div class="container">
+                <h2 class="section-title">Experience</h2>
+                <!-- data-start="YYYY-MM", optional data-end="YYYY-MM". script.js writes the
+                     label and the duration; leave the element empty. -->
+                <ul class="timeline">
+                    <li class="entry">
+                        <p class="entry-when" data-start="2026-08"></p>
+                        <h3>Teaching Assistant &middot; Programming Foundation 1 (DDP1)</h3>
+                        <p class="entry-where">Fakultas Ilmu Komputer, Universitas Indonesia</p>
+                        <p class="entry-note">Undergraduate TA for the introductory programming (Python) course.</p>
+                    </li>
+                    <li class="entry">
+                        <p class="entry-when" data-start="2026-04"></p>
+                        <h3>CTF Staff &middot; COMPFEST 18</h3>
+                        <p class="entry-where">Universitas Indonesia</p>
+                        <p class="entry-note">Problem setter for reverse engineering and binary exploitation, plus frontend and technical work.</p>
+                    </li>
+                    <li class="entry">
+                        <p class="entry-when" data-start="2026-03"></p>
+                        <h3>Member &middot; NetSOS SIG</h3>
+                        <p class="entry-where">RISTEK Fakultas Ilmu Komputer, Universitas Indonesia</p>
+                        <p class="entry-note">PIC of Pekan Ristek 2026 CTF Competition</p>
+                    </li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="section" id="achievement">
+            <div class="container">
+                <h2 class="section-title">Achievement</h2>
+                <ul class="cards">
+                    <li class="card">
+                        <a class="cert" href="/static/img/cert/polri-ctf-2026.png">
+                            <img src="/static/img/cert/polri-ctf-2026.png" alt="Certificate: 1st place, POLRI CTF 2026" loading="lazy">
+                        </a>
+                        <p class="entry-when">Aug 2026</p>
+                        <h3>1st place &middot; POLRI CTF 2026</h3>
+                        <p class="entry-where">E-Sport Kapolri Cup, with SiberLab.id</p>
+                    </li>
+                    <li class="card">
+                        <a class="cert" href="/static/img/cert/wreckit-7-2026.png">
+                            <img src="/static/img/cert/wreckit-7-2026.png" alt="Certificate: finalist, Wreck-IT 7.0 CTF" loading="lazy">
+                        </a>
+                        <p class="entry-when">Aug 2026</p>
+                        <h3>Finalist &middot; Wreck-IT 7.0 CTF</h3>
+                        <p class="entry-where">Politeknik Siber dan Sandi Negara</p>
+                    </li>
+                    <li class="card">
+                        <a class="cert" href="/static/img/cert/findit-2026.png">
+                            <img src="/static/img/cert/findit-2026.png" alt="Certificate: finalist, FindIT! 2026 CTF" loading="lazy">
+                        </a>
+                        <p class="entry-when">May 2026</p>
+                        <h3>Finalist &middot; FindIT! 2026 CTF</h3>
+                        <p class="entry-where">KMTETI, Fakultas Teknik UGM</p>
+                    </li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="section" id="project">
+            <div class="container">
+                <h2 class="section-title">Project</h2>
+                <ul class="cards">
+                    <li class="card">
+                        <p class="entry-when">Pwn tooling</p>
+                        <h3><a href="https://github.com/demtcsre/pwninit.py-demtcsre">pwninit.py-demtcsre</a></h3>
+                        <p class="entry-note">A tool for automating the setup of binary exploitation challenges. A port of <a href="https://github.com/sasha-999/pwninit.py">sasha-999/pwninit.py</a>, brought up to what the current <a href="https://github.com/io12/pwninit">io12/pwninit</a> does.</p>
+                    </li>
+                    <li class="card">
+                        <p class="entry-when">A/D CTF Flag Farm</p>
+                        <h3><a href="https://github.com/demtcsre/S4DFarm-demtcsre">S4DFarm-demtcsre</a></h3>
+                        <p class="entry-note">A flag farm for the Attack and Defense CTF format, forked from <a href="https://github.com/C4T-BuT-S4D/S4DFarm">C4T-BuT-S4D/S4DFarm</a> and reshaped around how I actually run a round. It got its first real outing at the PolriCTF 2026 final.</p>
+                    </li>
+                </ul>
+            </div>
+        </section>
     </main>
 
     <footer class="site-footer">
@@ -57,5 +161,10 @@
             <p>&copy; 2026 Ahmad Rizki Daffaa. Fakultas Ilmu Komputer, Universitas Indonesia.</p>
         </div>
     </footer>
+
+    <dialog id="lightbox">
+        <button class="lightbox-close" type="button" aria-label="Close">&times;</button>
+        <img alt="">
+    </dialog>
 </body>
 </html>
