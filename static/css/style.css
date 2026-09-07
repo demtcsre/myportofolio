@@ -352,7 +352,12 @@ h1, h2, .brand {
     border-color: var(--accent);
 }
 
+body.no-scroll{
+    overflow: hidden;
+}
+
 #lightbox {
+    margin: auto;
     max-width: min(92vw, 68.75rem);
     padding: 0;
     border: 1px solid var(--line);
