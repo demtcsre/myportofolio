@@ -4,8 +4,6 @@
     box-sizing: border-box;
 }
 
-/* ponytail: one token set, both themes, via light-dark(). Toggling is just
-   root.style.colorScheme in script.js — no .dark class, no duplicated :root block. */
 :root {
     color-scheme: light dark;
     --ink:        light-dark(#101d2b, #e3ebf2);
@@ -14,12 +12,16 @@
     --accent:     light-dark(#0a6f94, #4fb0d1);
     --line:       light-dark(#cdd8e2, #22323f);
     --text-muted: light-dark(#566878, #93a6b6);
+    --snow:       light-dark(#a8bccd, #ffffff);
+    --haze:       light-dark(rgba(146, 190, 224, 0.55), rgba(56, 116, 160, 0.38));
+    --haze-far:   light-dark(rgba(178, 208, 232, 0.45), rgba(40, 88, 126, 0.30));
     --radius: 0.25rem;
     --font-mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Menlo, Consolas, monospace;
 }
 
 html {
     scroll-padding-top: 5.5rem;
+    scrollbar-gutter: stable;
 }
 
 body {
@@ -243,7 +245,7 @@ h1, h2, h3 {
 }
 
 .section {
-    padding: 3.5rem 0;
+    padding: 3.125rem 0 0.75rem;
 }
 
 .section-title {
@@ -261,7 +263,6 @@ h1, h2, h3 {
     color: var(--accent);
 }
 
-/* shared entry typography for both the timeline and the cards */
 .entry-when {
     font-size: 0.75rem;
     text-transform: uppercase;
@@ -289,8 +290,11 @@ h1, h2, h3 {
     text-align: justify;
 }
 
-/* ponytail: timeline is one border-left plus a ::before dot. No pseudo-column,
-   no per-item connector element. */
+.entry-link {
+    margin-top: 1rem;
+    padding-bottom: 0.75rem;
+}
+
 .timeline {
     list-style: none;
     padding-left: 1.75rem;
@@ -309,7 +313,6 @@ h1, h2, h3 {
 .entry::before {
     content: "";
     position: absolute;
-    /* list padding + half the dot + half the 2px rule */
     left: calc(-1.75rem - 0.375rem - 1px);
     top: 0.5rem;
     width: 0.75rem;
@@ -338,11 +341,13 @@ h1, h2, h3 {
 }
 
 .card h3 a:hover,
-.entry-note a {
+.entry-note a,
+.entry-link a {
     color: var(--accent);
 }
 
-.entry-note a {
+.entry-note a,
+.entry-link a {
     text-decoration: underline;
     text-underline-offset: 0.125rem;
 }
@@ -414,6 +419,189 @@ body.no-scroll{
     border-top: 1px solid var(--line);
 }
 
+/* |---------------------------------------------------| */
+/* | BAGIAN SALJU BERJATUHAN, POLA DARI studiolimb.com | */
+/* |---------------------------------------------------| */
+.snow {
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: -1;
+}
+
+.snowflake {
+    --left: 50%;
+    --size: 14px;
+    --duration: 13s;
+    --delay: 0s;
+    --drift: 20px;
+    --opacity: 0.7;
+
+    position: absolute;
+    top: -20px;
+    left: var(--left);
+    font-size: var(--size);
+    line-height: 1;
+    color: var(--snow);
+    opacity: var(--opacity);
+    user-select: none;
+    animation: fall var(--duration) linear var(--delay) infinite;
+}
+
+.snowflake:nth-child(12n + 1) {
+    --left: 2%;
+    --size: 11px;
+    --drift: 34px;
+}
+
+.snowflake:nth-child(12n + 2) {
+    --left: 11%;
+    --size: 17px;
+    --drift: -46px;
+}
+
+.snowflake:nth-child(12n + 3) {
+    --left: 19%;
+    --size: 8px;
+    --drift: 22px;
+}
+
+.snowflake:nth-child(12n + 4) {
+    --left: 27%;
+    --size: 14px;
+    --drift: -30px;
+}
+
+.snowflake:nth-child(12n + 5) {
+    --left: 35%;
+    --size: 20px;
+    --drift: 41px;
+}
+
+.snowflake:nth-child(12n + 6) {
+    --left: 44%;
+    --size: 10px;
+    --drift: -18px;
+}
+
+.snowflake:nth-child(12n + 7) {
+    --left: 52%;
+    --size: 16px;
+    --drift: 27px;
+}
+
+.snowflake:nth-child(12n + 8) {
+    --left: 61%;
+    --size: 9px;
+    --drift: -39px;
+}
+
+.snowflake:nth-child(12n + 9) {
+    --left: 69%;
+    --size: 18px;
+    --drift: 15px;
+}
+
+.snowflake:nth-child(12n + 10) {
+    --left: 78%;
+    --size: 12px;
+    --drift: -25px;
+}
+
+.snowflake:nth-child(12n + 11) {
+    --left: 86%;
+    --size: 21px;
+    --drift: 44px;
+}
+
+.snowflake:nth-child(12n + 12) {
+    --left: 94%;
+    --size: 13px;
+    --drift: -12px;
+}
+
+.snowflake:nth-child(7n + 1) {
+    --duration: 12.5s;
+    --delay: -3.2s;
+    --opacity: 0.72;
+}
+
+.snowflake:nth-child(7n + 2) {
+    --duration: 16s;
+    --delay: -9.7s;
+    --opacity: 0.45;
+}
+
+.snowflake:nth-child(7n + 3) {
+    --duration: 9.5s;
+    --delay: -6.1s;
+    --opacity: 0.83;
+}
+
+.snowflake:nth-child(7n + 4) {
+    --duration: 14s;
+    --delay: -12.4s;
+    --opacity: 0.55;
+}
+
+.snowflake:nth-child(7n + 5) {
+    --duration: 17.5s;
+    --delay: -1.8s;
+    --opacity: 0.38;
+}
+
+.snowflake:nth-child(7n + 6) {
+    --duration: 10.5s;
+    --delay: -7.9s;
+    --opacity: 0.78;
+}
+
+.snowflake:nth-child(7n + 7) {
+    --duration: 15s;
+    --delay: -14.6s;
+    --opacity: 0.62;
+}
+
+.snow::before {
+    content: "";
+    position: absolute;
+    /* melebar keluar viewport supaya tepi blur tidak tampak sebagai garis */
+    inset: -15%;
+    background:
+        radial-gradient(60% 45% at 50% 0%, var(--haze), transparent 70%),
+        radial-gradient(45% 35% at 12% 5%, var(--haze-far), transparent 65%),
+        radial-gradient(40% 30% at 88% 2%, var(--haze-far), transparent 65%);
+    filter: blur(50px);
+}
+
+
+
+@keyframes fall {
+    0% {
+        transform: translateY(0) translateX(0);
+    }
+    25% {
+        transform: translateY(25vh) translateX(calc(var(--drift) * 0.5));
+    }
+    50% {
+        transform: translateY(55vh) translateX(calc(var(--drift) * -0.4));
+    }
+    75% {
+        transform: translateY(80vh) translateX(calc(var(--drift) * 0.25));
+    }
+    100% {
+        transform: translateY(110vh) translateX(calc(var(--drift) * -0.1));
+        opacity: 0;
+    }
+}
+
+@media (prefers-reduced-motion: reduce), (max-width: 40rem) {
+    .snow {
+        display: none;
+    }
+}
+
 @media (max-width: 47.5rem) {
     .hero-grid {
         display: flex;
@@ -441,8 +629,6 @@ body.no-scroll{
         display: inline-flex;
     }
 
-    /* ponytail: dropdown driven by the button's own aria-expanded, so JS only
-       flips the attribute and the state stays exposed to screen readers. */
     .nav-panel {
         display: none;
         position: absolute;

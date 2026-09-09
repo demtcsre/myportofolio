@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ name }} - Portfolio{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="icon" href="/static/img/favicon.svg" type="image/svg+xml"> <!--svg from https://www.svgrepo.com/svg/476043/cat-->
+    <script>
+        try { var t = localStorage.getItem('theme');
+            if (t) document.documentElement.style.colorScheme = t; } catch (e) {}
+    </script>
+    <script src="/static/js/script.js" defer></script>
+</head>
+<body>
+    <header class="site-header">
+        <div class="container">
+            <a href="{% url 'main:show_main' %}#profile" class="brand">{{ name }}</a>
+            <div class="nav-wrap">
+                <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-panel" aria-label="Menu">
+                    <svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true">
+                        <path d="M2 5h16M2 10h16M2 15h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </button>
+                <div class="nav-panel" id="nav-panel">
+                    <nav>
+                        <a href="{% url 'main:show_main' %}">Profile</a>
+                        <a href="{% url 'main:show_experience' %}">Experience</a>
+                        <a href="{% url 'main:show_achievement' %}">Achievement</a>
+                        <a href="{% url 'main:show_project' %}">Project</a>
+                    </nav>
+                    <button class="theme" type="button" data-scheme="light" aria-label="Toggle light and dark theme">
+                        <svg class="icon sun" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                            <circle cx="12" cy="12" r="4.5"/>
+                            <path d="M12 1.5v2.5M12 20v2.5M3.9 3.9l1.8 1.8M18.3 18.3l1.8 1.8M1.5 12h2.5M20 12h2.5M3.9 20.1l1.8-1.8M18.3 5.7l1.8-1.8"/>
+                        </svg>
+                        <svg class="icon moon" viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">
+                            <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main>
+{% block content %}{% endblock %}
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            <p>&copy; 2026 {{ name }}. Fakultas Ilmu Komputer, Universitas Indonesia.</p>
+        </div>
+    </footer>
+
+    <!-- Salju: murni CSS. Butirnya statis di sini, variasi tiap butir
+         diatur :nth-child di style.css. Tidak ada JavaScript sama sekali. -->
+    <div class="snow" aria-hidden="true">
+        <span class="snowflake">❄︎</span><span class="snowflake">❆︎</span><span class="snowflake">✻︎</span><span class="snowflake">❄︎</span><span class="snowflake">❆︎</span><span class="snowflake">✻︎</span><span class="snowflake">❄︎</span><span class="snowflake">❆︎</span>
+        <span class="snowflake">✻︎</span><span class="snowflake">❄︎</span><span class="snowflake">❆︎</span><span class="snowflake">✻︎</span><span class="snowflake">❄︎</span><span class="snowflake">❆︎</span><span class="snowflake">✻︎</span><span class="snowflake">❄︎</span>
+        <span class="snowflake">❆︎</span><span class="snowflake">✻︎</span><span class="snowflake">❄︎</span><span class="snowflake">❆︎</span><span class="snowflake">✻︎</span><span class="snowflake">❄︎</span><span class="snowflake">❆︎</span><span class="snowflake">✻︎</span>
+        <span class="snowflake">❄︎</span><span class="snowflake">❆︎</span><span class="snowflake">✻︎</span><span class="snowflake">❄︎</span><span class="snowflake">❆︎</span><span class="snowflake">✻︎</span><span class="snowflake">❄︎</span><span class="snowflake">❆︎</span>
+        <span class="snowflake">✻︎</span><span class="snowflake">❄︎</span><span class="snowflake">❆︎</span><span class="snowflake">✻︎</span><span class="snowflake">❄︎</span><span class="snowflake">❆︎</span><span class="snowflake">✻︎</span><span class="snowflake">❄︎</span>
+        <span class="snowflake">❆︎</span><span class="snowflake">✻︎</span><span class="snowflake">❄︎</span><span class="snowflake">❆︎</span><span class="snowflake">✻︎</span><span class="snowflake">❄︎</span><span class="snowflake">❆︎</span><span class="snowflake">✻︎</span>
+        <span class="snowflake">❄︎</span><span class="snowflake">❆︎</span><span class="snowflake">✻︎</span><span class="snowflake">❄︎</span><span class="snowflake">❆︎</span><span class="snowflake">✻︎</span><span class="snowflake">❄︎</span><span class="snowflake">❆︎</span>
+        <span class="snowflake">✻︎</span><span class="snowflake">❄︎</span><span class="snowflake">❆︎</span><span class="snowflake">✻︎</span><span class="snowflake">❄︎</span><span class="snowflake">❆︎</span><span class="snowflake">✻︎</span><span class="snowflake">❄︎</span>
+        <span class="snowflake">❆︎</span><span class="snowflake">✻︎</span><span class="snowflake">❄︎</span>
+    </div>
+
+    <dialog id="lightbox">
+        <button class="lightbox-close" type="button" aria-label="Close">&times;</button>
+        <img alt="">
+    </dialog>
+</body>
+</html>
