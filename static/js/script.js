@@ -86,3 +86,58 @@ lightbox.addEventListener('click', function () {
     lightbox.close();
     document.body.classList.remove('no-scroll');
 });
+
+
+// |-------------------------| //
+// | BAGIAN ANIMASI SNOWFALL | //
+// |-------------------------| //
+var snow = document.querySelector('.snow');
+
+var SNOW = {
+    count: 150,
+    speed: 2.5,
+    size: 3,
+    wind: 0.5
+};
+var FALL_SECONDS = [9, 18];
+var DRIFT_VH = [26, 60];
+var SIZE_STEP = [1.7, 4.0];
+var GLYPHS = ['\u2744\uFE0E', '\u2746\uFE0E', '\u273B\uFE0E'];
+var EASINGS = [
+    'linear',
+    'linear',
+    'cubic-bezier(0.4, 0.05, 0.6, 0.95)',
+    'cubic-bezier(0.35, 0.1, 0.65, 0.9)'
+];
+
+function rand(min, max) {
+    return Math.random() * (max - min) + min;
+}
+
+function pick(list) {
+    return list[Math.floor(Math.random() * list.length)];
+}
+
+if (snow && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    var batch = document.createDocumentFragment();
+
+    for (var f = 0; f < SNOW.count; f++) {
+        var flake = document.createElement('span');
+        var duration = rand(FALL_SECONDS[0], FALL_SECONDS[1]) / SNOW.speed;
+
+        flake.className = 'snowflake';
+        flake.textContent = pick(GLYPHS);
+        flake.style.cssText =
+            '--left:' + rand(-15, 95).toFixed(2) + '%;' +
+            '--size:' + (rand(SIZE_STEP[0], SIZE_STEP[1]) * SNOW.size).toFixed(1) + 'px;' +
+            '--duration:' + duration.toFixed(2) + 's;' +
+            '--delay:-' + rand(0, duration).toFixed(2) + 's;' +
+            '--drift:' + (rand(DRIFT_VH[0], DRIFT_VH[1]) * SNOW.wind).toFixed(1) + 'vh;' +
+            '--opacity:' + rand(0.35, 0.85).toFixed(2) + ';' +
+            'animation-timing-function:' + pick(EASINGS) + ';';
+
+        batch.appendChild(flake);
+    }
+
+    snow.appendChild(batch);
+}
