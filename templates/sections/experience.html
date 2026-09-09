@@ -1,0 +1,29 @@
+<section class="section" id="experience">
+    <div class="container">
+        <h2 class="section-title">Experience</h2>
+        <ul class="timeline">
+            {% for experience in experience_list %}
+            <li class="entry">
+                <p class="entry-when" data-start="{{ experience.started_at|date:'Y-m' }}"{% if experience.ended_at %} data-end="{{ experience.ended_at|date:'Y-m' }}"{% endif %}></p>
+                <h3>{{ experience.title }}</h3>
+                <p class="entry-where">{% if experience.organization %}{{ experience.organization }} &middot; {% endif %}{{ experience.get_category_display }}</p>
+                <p class="entry-note">{{ experience.description }}</p>
+                {% if experience.thumbnail %}
+                <a class="cert" href="{{ experience.thumbnail }}">
+                    <img src="{{ experience.thumbnail }}" alt="Thumbnail for {{ experience.title }}" loading="lazy">
+                </a>
+                {% endif %}
+            </li>
+            {% empty %}
+            <li class="entry">
+                <p class="entry-note">Belum ada data experience. Tambahkan lewat <a href="/admin/">Django Admin</a>.</p>
+            </li>
+            {% endfor %}
+        </ul>
+        {% if standalone %}
+        <p class="entry-link"><a href="{% url 'main:show_main' %}#experience">&larr; Back to portfolio</a></p>
+        {% else %}
+        <p class="entry-link"><a href="{% url 'main:show_experience' %}">Experience page &rarr;</a></p>
+        {% endif %}
+    </div>
+</section>

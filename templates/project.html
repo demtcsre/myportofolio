@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+
+{% block title %}Project - {{ name }}{% endblock %}
+
+{% block content %}
+        {% include "sections/project.html" with standalone=True %}
+{% endblock %}

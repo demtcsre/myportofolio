@@ -66,9 +66,9 @@ document.querySelectorAll('.entry-when[data-start]').forEach(function (el) {
         ' \u00B7 ' + months + (months === 1 ? ' month' : ' months');
 });
 
-// BAGIAN IMAGE MODAL/LIGHTBOX, KETIKA GAMBAR SERTIFIKAT DI SECTION ACHIEVEMENT DICLICK
-// ponytail: native <dialog>. Escape, focus trap and backdrop come free; the
-// anchor's href stays the no-JS fallback. Click anywhere in the dialog closes.
+// |--------------------------------------------------------------------------------------| //
+// | BAGIAN IMAGE MODAL/LIGHTBOX, KETIKA GAMBAR SERTIFIKAT DI SECTION ACHIEVEMENT DICLICK | //
+// |--------------------------------------------------------------------------------------| //
 var lightbox = document.getElementById('lightbox');
 var lightboxImg = lightbox.querySelector('img');
 

@@ -1,0 +1,28 @@
+<section class="section" id="achievement">
+    <div class="container">
+        <h2 class="section-title">Achievement</h2>
+        <ul class="cards">
+            {% for achievement in achievement_list %}
+            <li class="card">
+                {% if achievement.certificate %}
+                <a class="cert" href="{{ achievement.certificate }}">
+                    <img src="{{ achievement.certificate }}" alt="Certificate: {{ achievement.title|cut:"·" }}" loading="lazy">
+                </a>
+                {% endif %}
+                <p class="entry-when">{{ achievement.awarded_at|date:'M Y' }}</p>
+                <h3>{{ achievement.title }}</h3>
+                <p class="entry-where">{{ achievement.organizer }}</p>
+            </li>
+            {% empty %}
+            <li class="card">
+                <p class="entry-note">Belum ada data achievement. Tambahkan lewat <a href="/admin/">Django Admin</a>.</p>
+            </li>
+            {% endfor %}
+        </ul>
+        {% if standalone %}
+        <p class="entry-link"><a href="{% url 'main:show_main' %}#achievement">&larr; Back to portfolio</a></p>
+        {% else %}
+        <p class="entry-link"><a href="{% url 'main:show_achievement' %}">Achievement page &rarr;</a></p>
+        {% endif %}
+    </div>
+</section>
