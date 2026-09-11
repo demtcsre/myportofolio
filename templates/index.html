@@ -32,88 +32,9 @@
             </div>
         </section>
 
-        {% comment %} Hardcoded until 2026-09-09; the same three rows are now seeded by
-        main/migrations/0003_seed_portfolio_content.py and rendered from Experience.
-        <section class="section" id="experience">
-            <div class="container">
-                <h2 class="section-title">Experience</h2>
-                <ul class="timeline">
-                    <li class="entry">
-                        <p class="entry-when" data-start="2026-08"></p>
-                        <h3>Teaching Assistant &middot; Programming Foundation 1 (DDP1)</h3>
-                        <p class="entry-where">Fakultas Ilmu Komputer, Universitas Indonesia</p>
-                        <p class="entry-note">Undergraduate TA for the introductory programming (Python) course.</p>
-                    </li>
-                    <li class="entry">
-                        <p class="entry-when" data-start="2026-04"></p>
-                        <h3>CTF Staff &middot; COMPFEST 18</h3>
-                        <p class="entry-where">Universitas Indonesia</p>
-                        <p class="entry-note">Problem setter for reverse engineering and binary exploitation, plus frontend and technical work.</p>
-                    </li>
-                    <li class="entry">
-                        <p class="entry-when" data-start="2026-03"></p>
-                        <h3>Member &middot; NetSOS SIG</h3>
-                        <p class="entry-where">RISTEK Fakultas Ilmu Komputer, Universitas Indonesia</p>
-                        <p class="entry-note">PIC of Pekan Ristek 2026 CTF Competition</p>
-                    </li>
-                </ul>
-            </div>
-        </section>
-        {% endcomment %}
         {% include "sections/experience.html" %}
-        {% comment %} Hardcoded until 2026-09-09; now rendered from Achievement.
-        <section class="section" id="achievement">
-            <div class="container">
-                <h2 class="section-title">Achievement</h2>
-                <ul class="cards">
-                    <li class="card">
-                        <a class="cert" href="/static/img/cert/polri-ctf-2026.png">
-                            <img src="/static/img/cert/polri-ctf-2026.png" alt="Certificate: 1st place, POLRI CTF 2026" loading="lazy">
-                        </a>
-                        <p class="entry-when">Aug 2026</p>
-                        <h3>1st place &middot; POLRI CTF 2026</h3>
-                        <p class="entry-where">E-Sport Kapolri Cup, with SiberLab.id</p>
-                    </li>
-                    <li class="card">
-                        <a class="cert" href="/static/img/cert/wreckit-7-2026.png">
-                            <img src="/static/img/cert/wreckit-7-2026.png" alt="Certificate: finalist, Wreck-IT 7.0 CTF" loading="lazy">
-                        </a>
-                        <p class="entry-when">Aug 2026</p>
-                        <h3>Finalist &middot; Wreck-IT 7.0 CTF</h3>
-                        <p class="entry-where">Politeknik Siber dan Sandi Negara</p>
-                    </li>
-                    <li class="card">
-                        <a class="cert" href="/static/img/cert/findit-2026.png">
-                            <img src="/static/img/cert/findit-2026.png" alt="Certificate: finalist, FindIT! 2026 CTF" loading="lazy">
-                        </a>
-                        <p class="entry-when">May 2026</p>
-                        <h3>Finalist &middot; FindIT! 2026 CTF</h3>
-                        <p class="entry-where">KMTETI, Fakultas Teknik UGM</p>
-                    </li>
-                </ul>
-            </div>
-        </section>
-        {% endcomment %}
+        
         {% include "sections/achievement.html" %}
 
-        {% comment %} Hardcoded until 2026-09-09; now rendered from Project.
-        <section class="section" id="project">
-            <div class="container">
-                <h2 class="section-title">Project</h2>
-                <ul class="cards">
-                    <li class="card">
-                        <p class="entry-when">Pwn tooling</p>
-                        <h3><a href="https://github.com/demtcsre/pwninit.py-demtcsre">pwninit.py-demtcsre</a></h3>
-                        <p class="entry-note">A tool for automating the setup of binary exploitation challenges. A port of <a href="https://github.com/sasha-999/pwninit.py">sasha-999/pwninit.py</a>, brought up to what the current <a href="https://github.com/io12/pwninit">io12/pwninit</a> does.</p>
-                    </li>
-                    <li class="card">
-                        <p class="entry-when">A/D CTF Flag Farm</p>
-                        <h3><a href="https://github.com/demtcsre/S4DFarm-demtcsre">S4DFarm-demtcsre</a></h3>
-                        <p class="entry-note">A flag farm for the Attack and Defense CTF format, forked from <a href="https://github.com/C4T-BuT-S4D/S4DFarm">C4T-BuT-S4D/S4DFarm</a> and reshaped around how I actually run a round. It got its first real outing at the PolriCTF 2026 final.</p>
-                    </li>
-                </ul>
-            </div>
-        </section>
-        {% endcomment %}
         {% include "sections/project.html" %}
 {% endblock %}
