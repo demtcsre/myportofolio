@@ -21,6 +21,10 @@ ALLOWED_HOSTS = ["localhost", "127.0.0.1", "ahmad-rizki53-myportofolio.pws.cs.ui
 PRODUCTION = os.getenv('PRODUCTION', 'False').lower() == 'true'
 CSRF_TRUSTED_ORIGINS = ["https://ahmad-rizki53-myportofolio.pws.cs.ui.ac.id"]
 
+# Owner-only gate for write requests (add/delete) until auth lands in a later
+# tutorial. Forms post it as the secret_code field; see main/forms.py and views.py.
+SECRET_CODE = os.getenv('SECRET_CODE', '')
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 

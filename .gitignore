@@ -1,3 +1,6 @@
+# Claude
+.claude/
+
 # Django
 *.log
 *.pot

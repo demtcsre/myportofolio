@@ -1,6 +1,8 @@
 import datetime
+import json
+import uuid
 
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls import reverse
 
 from main.models import Achievement, Experience, Project
@@ -294,3 +296,170 @@ class ProjectPageTest(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Belum ada data project.")
+
+
+class ProjectJsonTest(TestCase):
+    def setUp(self):
+        self.url = reverse("main:get_project_json")
+
+    def test_json_endpoint_serves_every_project(self):
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "application/json")
+        self.assertEqual(len(json.loads(response.content)), 2)
+
+    def test_json_endpoint_filters_by_name(self):
+        response = self.client.get(self.url, {"name": "s4dfarm"})
+        payload = json.loads(response.content)
+
+        self.assertEqual(len(payload), 1)
+        self.assertEqual(payload[0]["fields"]["name"], "S4DFarm-demtcsre")
+
+    def test_project_page_search_narrows_the_list(self):
+        response = self.client.get(reverse("main:show_project"), {"name": "pwninit"})
+
+        self.assertEqual(len(response.context["project_list"]), 1)
+        self.assertEqual(response.context["name_query"], "pwninit")
+        self.assertNotContains(response, "S4DFarm-demtcsre")
+
+
+@override_settings(SECRET_CODE="kode-rahasia")
+class SecretCodeGateTest(TestCase):
+    """Add dan delete cuma boleh jalan kalau secret_code yang dikirim benar."""
+
+    def setUp(self):
+        self.add_url = reverse("main:create_project")
+        self.payload = {
+            "name": "Proyek Baru",
+            "kicker": "Buatan test",
+            "description": "Deskripsi.",
+            "url": "https://example.com",
+            "order": 3,
+            "secret_code": "kode-rahasia",
+        }
+
+    def without_code(self, **overrides):
+        payload = self.payload | overrides
+        payload.pop("secret_code", None)
+        return payload
+
+    def test_add_form_page_stays_public(self):
+        response = self.client.get(self.add_url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "forms/projects_form.html")
+
+    def test_add_form_asks_for_the_code_without_leaking_it(self):
+        response = self.client.get(self.add_url)
+
+        self.assertContains(response, 'name="secret_code"')
+        self.assertContains(response, 'type="password"')
+        self.assertNotContains(response, "kode-rahasia")
+
+    def test_add_without_a_code_bounces_back_to_the_form(self):
+        response = self.client.post(self.add_url, self.without_code())
+
+        self.assertRedirects(response, self.add_url)
+        self.assertEqual(Project.objects.count(), 2)
+
+    def test_add_with_a_wrong_code_bounces_back_to_the_form(self):
+        response = self.client.post(self.add_url, self.payload | {"secret_code": "salah"})
+
+        self.assertRedirects(response, self.add_url)
+        self.assertEqual(Project.objects.count(), 2)
+
+    def test_a_rejected_add_shows_the_warning(self):
+        response = self.client.post(
+            self.add_url, self.payload | {"secret_code": "salah"}, follow=True
+        )
+
+        self.assertContains(response, "Wrong or missing secret code.")
+        self.assertContains(response, 'class="message error"')
+
+    def test_add_with_the_right_code_saves_the_project(self):
+        response = self.client.post(self.add_url, self.payload)
+
+        self.assertRedirects(response, reverse("main:show_project"))
+        self.assertEqual(Project.objects.count(), 3)
+        self.assertEqual(Project.objects.get(name="Proyek Baru").kicker, "Buatan test")
+
+    def test_the_code_is_never_written_to_the_model(self):
+        self.client.post(self.add_url, self.payload)
+        project = Project.objects.get(name="Proyek Baru")
+
+        self.assertNotIn("kode-rahasia", str(project.__dict__))
+
+    def test_a_right_code_still_has_to_pass_the_model_field_validation(self):
+        response = self.client.post(self.add_url, self.payload | {"name": ""})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(Project.objects.count(), 2)
+        self.assertContains(response, "form-error")
+
+    def test_delete_without_a_code_keeps_the_project(self):
+        project = Project.objects.first()
+
+        response = self.client.post(reverse("main:delete_project", args=[project.id]))
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(Project.objects.count(), 2)
+
+    def test_delete_with_a_wrong_code_keeps_the_project(self):
+        project = Project.objects.first()
+
+        response = self.client.post(
+            reverse("main:delete_project", args=[project.id]),
+            {"secret_code": "salah"},
+            follow=True,
+        )
+
+        self.assertContains(response, "Wrong or missing secret code.")
+        self.assertEqual(Project.objects.count(), 2)
+        self.assertTrue(Project.objects.filter(pk=project.id).exists())
+
+    def test_delete_with_the_right_code_removes_the_project(self):
+        project = Project.objects.first()
+
+        response = self.client.post(
+            reverse("main:delete_project", args=[project.id]), {"secret_code": "kode-rahasia"}
+        )
+
+        self.assertRedirects(response, reverse("main:show_project"))
+        self.assertFalse(Project.objects.filter(pk=project.id).exists())
+
+    def test_delete_of_a_missing_project_is_404(self):
+        response = self.client.post(
+            reverse("main:delete_project", args=[uuid.uuid4()]), {"secret_code": "kode-rahasia"}
+        )
+
+        self.assertEqual(response.status_code, 404)
+
+    def test_delete_confirmation_carries_its_own_code_field(self):
+        response = self.client.get(reverse("main:show_project"))
+
+        self.assertContains(response, 'name="secret_code"', count=Project.objects.count())
+
+
+@override_settings(SECRET_CODE="")
+class UnconfiguredSecretCodeTest(TestCase):
+    """Setting kosong harus mengunci write, bukan justru membukanya."""
+
+    def test_an_empty_setting_blocks_add(self):
+        response = self.client.post(
+            reverse("main:create_project"),
+            {"name": "x", "description": "d", "order": 0, "secret_code": ""},
+        )
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(Project.objects.count(), 2)
+
+    def test_an_empty_setting_blocks_delete(self):
+        project = Project.objects.first()
+
+        response = self.client.post(
+            reverse("main:delete_project", args=[project.id]), {"secret_code": ""}
+        )
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(Project.objects.count(), 2)
