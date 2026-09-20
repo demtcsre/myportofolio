@@ -1,6 +1,15 @@
 <section class="section" id="experience">
     <div class="container">
         <h2 class="section-title">Experience</h2>
+        {% if standalone %}
+        <div class="experience-bar">
+            <form class="experience-search" method="get" action="{% url 'main:show_experience' %}">
+                <input type="search" name="name" value="{{ name_query }}" placeholder="Search experience by name" aria-label="Search experience by name">
+                <button type="submit" class="button button-secondary">Search</button>
+            </form>
+            <a href="{% url 'main:create_experience' %}" class="button">+ Add Experience</a>
+        </div>
+        {% endif %}
         <ul class="timeline">
             {% for experience in experience_list %}
             <li class="entry">
@@ -13,6 +22,35 @@
                     <img src="{{ experience.thumbnail }}" alt="Thumbnail for {{ experience.title }}" loading="lazy">
                 </a>
                 {% endif %}
+                
+                {% if standalone %}
+                
+                <div style="display: flex; gap: 0.5rem;flex-wrap: wrap;">
+                    <p class="card-actions">
+                        <a href="{% url 'main:update_experience' experience.id %}" class="button">Update</a>
+                    </p>
+
+                    <p class="card-actions">
+                        <button type="button" class="button button-danger" popovertarget="delete-{{ experience.id }}">Delete</button>
+                    </p>
+                </div>
+
+                <div id="delete-{{ experience.id }}" popover>
+                    <p>Delete <strong>{{ experience.name }}</strong>? This cannot be undone.</p>
+                    <form method="post" action="{% url 'main:delete_experience' experience.id %}">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label for="secret-code-{{ experience.id }}">Secret Code</label>
+                            <input type="password" id="secret-code-{{ experience.id }}" name="secret_code" autocomplete="off" required>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="button button-danger">Yes, delete</button>
+                            <button type="button" class="button button-secondary" popovertarget="delete-{{ experience.id }}" popovertargetaction="hide">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+                {% endif %}
+
             </li>
             {% empty %}
             <li class="entry">

@@ -41,7 +41,8 @@ class Achievement(models.Model):
     title = models.CharField(max_length=255)
     organizer = models.CharField(max_length=255, blank=True)
     awarded_at = models.DateField()
-    certificate = models.CharField(max_length=255, blank=True)
+    # certificate = models.CharField(max_length=255, blank=True)
+    certificate = models.URLField(null=True, blank=True)
 
     class Meta:
         ordering = ['-awarded_at', 'title']

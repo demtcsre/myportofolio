@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}
+    {% if is_update %}Edit Achievement{% else %}Add Achievement{% endif %} - {{ name }}
+{% endblock %}
+
+{% block content %}
+        <section class="section" id="achievement-form">
+            <div class="container">
+                <h2 class="section-title">{% if is_update %}Edit Achievement: {{ achievement.name }}{% else %}Add New Achievement{% endif %}</h2>
+                <form method="post" class="achievement-form">
+                    {% csrf_token %}
+                    {% for field in form %}
+                        <div class="form-group">
+                            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                            {{ field }}
+                            {% for error in field.errors %}
+                                <p class="form-error">{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endfor %}
+                    <div class="form-actions">
+                        <button type="submit" class="button">{% if is_update %}Save Update{% else %}Add Achievement{% endif %}</button>
+                        <a href="{% url 'main:show_achievement' %}" class="button button-secondary">Batal</a>
+                    </div>
+                </form>
+            </div>
+        </section>
+{% endblock %}

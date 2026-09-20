@@ -1,6 +1,15 @@
 <section class="section" id="achievement">
     <div class="container">
         <h2 class="section-title">Achievement</h2>
+        {% if standalone %}
+        <div class="achievement-bar">
+            <form class="achievement-search" method="get" action="{% url 'main:show_achievement' %}">
+                <input type="search" name="name" value="{{ name_query }}" placeholder="Search achievement by name" aria-label="Search achievement by name">
+                <button type="submit" class="button button-secondary">Search</button>
+            </form>
+            <a href="{% url 'main:create_achievement' %}" class="button">+ Add Achievement</a>
+        </div>
+        {% endif %}
         <ul class="cards">
             {% for achievement in achievement_list %}
             <li class="card">
@@ -12,6 +21,33 @@
                 <p class="entry-when">{{ achievement.awarded_at|date:'M Y' }}</p>
                 <h3>{{ achievement.title }}</h3>
                 <p class="entry-where">{{ achievement.organizer }}</p>
+                {% if standalone %}
+                
+                <div style="display: flex; gap: 0.5rem;flex-wrap: wrap;">
+                    <p class="card-actions">
+                        <a href="{% url 'main:update_achievement' achievement.id %}" class="button">Update</a>
+                    </p>
+
+                    <p class="card-actions">
+                        <button type="button" class="button button-danger" popovertarget="delete-{{ achievement.id }}">Delete</button>
+                    </p>
+                </div>
+
+                <div id="delete-{{ achievement.id }}" popover>
+                    <p>Delete <strong>{{ achievement.title }}</strong>? This cannot be undone.</p>
+                    <form method="post" action="{% url 'main:delete_achievement' achievement.id %}">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label for="secret-code-{{ achievement.id }}">Secret Code</label>
+                            <input type="password" id="secret-code-{{ achievement.id }}" name="secret_code" autocomplete="off" required>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="button button-danger">Yes, delete</button>
+                            <button type="button" class="button button-secondary" popovertarget="delete-{{ achievement.id }}" popovertargetaction="hide">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+                {% endif %}
             </li>
             {% empty %}
             <li class="card">
