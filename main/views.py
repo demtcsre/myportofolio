@@ -6,6 +6,8 @@ from django.contrib import messages
 from django.core import serializers
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse_lazy
+from django.views.generic import CreateView, UpdateView
 
 
 from main.models import Achievement, Experience, Project
@@ -81,6 +83,25 @@ def create_project(request):
 
     return render(request, "forms/projects_form.html", PROFILE | {"form": form})
 
+@require_secret
+def update_project(request, project_id):
+    project = get_object_or_404(Project, pk=project_id)
+    
+    if request.method == "POST":
+        form = ProjectForm(request.POST, instance=project)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Project successfully updated!")
+            return redirect("main:show_project")
+    else:
+        form = ProjectForm(instance=project)
+
+    context = PROFILE | {
+        "form": form,
+        "is_update": True,
+        "project": project
+    }
+    return render(request, "forms/projects_form.html", context)
 
 @require_secret
 def delete_project(request, project_id):

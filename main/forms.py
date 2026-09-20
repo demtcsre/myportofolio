@@ -22,16 +22,16 @@ class ProjectForm(ModelForm):
         fields = [
             "name",
             "kicker",
-            "description",
             "url",
+            "description",
             "order",
         ]
 
         labels = {
             "name": "Nama Proyek",
             "kicker": "Label Singkat Tentang Proyek",
-            "description": "Deskripsi Proyek",
             "url": "URL Proyek",
+            "description": "Deskripsi Proyek",
             "order": "Urutan Proyek dalam List (default value 0)",
         }
 
@@ -48,15 +48,15 @@ class ProjectForm(ModelForm):
                     "maxlength": 100,
                 }
             ),
+            "url": URLInput(
+                attrs={
+                    "placeholder": "https://github.com/demtcsre/myportofolio",
+                }
+            ),
             "description": Textarea(
                 attrs={
                     "placeholder": "Website yang berisi profil, penghargaan, pengalaman, serta portofolio.",
                     "rows": 3,
-                }
-            ),
-            "url": URLInput(
-                attrs={
-                    "placeholder": "https://github.com/demtcsre/myportofolio",
                 }
             ),
             "order": NumberInput(
