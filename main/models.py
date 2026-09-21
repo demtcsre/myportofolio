@@ -56,7 +56,7 @@ class Project(models.Model):
     name = models.CharField(max_length=255)
     kicker = models.CharField(max_length=100, blank=True, help_text="Small label above the title.")
     url = models.URLField(blank=True)
-    description = models.TextField(help_text="Inline HTML links are allowed; rendered unescaped.")
+    description = models.TextField()
     order = models.PositiveIntegerField(default=0)
 
     class Meta:

@@ -15,7 +15,7 @@
             <li class="card">
                 <p class="entry-when">{{ project.kicker }}</p>
                 <h3>{% if project.url %}<a href="{{ project.url }}">{{ project.name }}</a>{% else %}{{ project.name }}{% endif %}</h3>
-                <p class="entry-note">{{ project.description|safe }}</p>
+                <p class="entry-note">{{ project.description }}</p>
                 {% if standalone %}
                 
                 <div style="display: flex; gap: 0.5rem;flex-wrap: wrap;">

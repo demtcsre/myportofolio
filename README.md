@@ -208,3 +208,22 @@ AI Chat Session Link: https://claude.ai/code/session_019PEDDe9qcKUsx8KD1kFoD1
 - Mengubah tautan navbar, dan menyetel `z-index` lapisan salju jadi `-1` supaya saljunya jatuh di belakang teks.
 - Menyetel padding `.section` dan `.entry-link`, serta jumlah dan ukuran butiran salju.
 - Merapikan kode yang ditulis AI.
+
+### Tugas 3
+
+
+#### Progres
+
+
+#### Pertanyaan Reflektif
+
+
+#### AI Disclosure
+Model AI: Gemini 3.1 Pro
+AI Chat Session Link: https://share.gemini.google/r7oa8qGzLtEl
+
+##### Penggunaan AI
+
+
+
+##### Perbaikan Manual
