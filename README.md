@@ -6,17 +6,13 @@
 **Tautan deployment (PWS):** http://ahmad-rizki53-myportofolio.pws.cs.ui.ac.id
 
 ## Deskripsi Proyek
-Web portofolio pribadi saya untuk mata kuliah Pemrograman Berbasis Platform (PBP). Halaman depannya berisi profil singkat plus tiga entri terbaru dari experience, achievement, dan project. Semua item dari ketiga section tersebut ada di punya halamannya masing-masing yang bisa dibuka lewat navbar.
-
-Datanya sudah tidak ditulis langsung di HTML. Semua konten portofolio sekarang jadi model di app `main` dan diambil lewat Django ORM, jadi kalau ada pengalaman atau proyek baru tinggal ditambahkan lewat Django Admin. Isi awalnya saya tanam lewat data migration, jadi database yang baru dibuat langsung ada isinya, entah SQLite di laptop saya atau PostgreSQL di PWS.
-
-Ada light/dark mode yang pilihannya disimpan di localStorage, navbar sticky yang berubah jadi dropdown di layar kecil, sertifikat yang bisa diklik untuk diperbesar, durasi tiap experience yang dihitung JavaScript dari tanggal mulainya, dan animasi salju menggunakan CSS keyframes yang tiap butirnya dibuat dengan JavaScript.
+Web portofolio pribadi untuk mata kuliah Pemrograman Berbasis Platform (PBP). Ada beberapa pages yaitu homepage, experience, achievement, dan project. Terdapat pula pilihan *light* atau *dark* untuk *theme* dari website.
 
 ### Tech Stack
 | Komponen | Keterangan |
 | --- | --- |
-| Bahasa | Python 3.13 |
-| Framework | Django 6.1 |
+| Bahasa Pemrograman | Python 3.13 |
+| Framework | Django 5.0 |
 | Database | SQLite (lokal), PostgreSQL (production) |
 | Static files | WhiteNoise |
 | WSGI server | Gunicorn (production) |
@@ -24,48 +20,35 @@ Ada light/dark mode yang pilihannya disimpan di localStorage, navbar sticky yang
 | Frontend | HTML5, CSS, JavaScript |
 | Deployment | Pacil Web Service (PWS) |
 
-Django memilih databasenya sendiri di `portofolio/settings.py`. Kalau variabel `PRODUCTION` bernilai `True`, Django pakai PostgreSQL dengan kredensial dari `.env`. Selain itu dia pakai `db.sqlite3` yang ada di root.
+Pemilihan db diatur oleh Django melalui`portofolio/settings.py`. `PRODUCTION=true` akan menggunakan PostgreSQL sementara `PRODUCTION=true` akan menggunakan `db.sqlite3` yang ada di root.
 
 ### Struktur Proyek
 ```
 .
 ├── env/
-├── main/                       # app utama, isi semua konten portofolio
-│   ├── models.py               # model Experience, Achievement, Project
-│   ├── views.py                # empat view: landing page + satu per section
-│   ├── urls.py                 # routing app, app_name = "main"
-│   ├── admin.py                # registrasi ketiga model ke Django Admin
-│   ├── tests.py                # unit test
-│   └── migrations/             # termasuk data migration yang menanam isi awal
-├── portofolio/                 # konfigurasi proyek
-│   ├── settings.py             # pemilihan database, WhiteNoise, static files
-│   ├── urls.py                 # 'admin/' -> Django Admin, sisanya ke main.urls
-│   ├── asgi.py
-│   └── wsgi.py
+├── main/                  # __init__.py, admin.py, apps.py, forms.py, models.py, tests.py, urls.py, views.py
+│   └── migrations/
+├── portofolio/            # __init__.py, asgi.py, settings.py, urls.py, wsgi.py
 ├── static/
-│   ├── css/style.css           # styling responsive, tema terang/gelap, salju
-│   ├── js/script.js            # toggle tema, dropdown navbar, modal image, salju
-│   └── img/                    # foto profil dan sertifikat (img/cert/)
-├── templates/
-│   ├── base.html               # head, navbar, footer, dipakai semua halaman
-│   ├── index.html              # landing page
-│   ├── experience.html         # halaman per section
-│   ├── achievement.html
-│   ├── project.html
-│   └── sections/               # markup tiap section, di-include index & halamannya
+│   ├── css/               # css styling
+│   ├── js/                # js logic and animation
+│   └── img/               # static images
+├── templates/             # achievement.html, base.html, experience.html, index.html, project.html
+│   ├── forms/             # HTML of forms for each section (achievement, experience, project)
+│   └── sections/          # HTML of each section (achievement, experience, project)
 ├── .env
 ├── .env.prod
 ├── .gitignore
 ├── db.sqlite3
-├── manage.py                   # entry point perintah Django
-├── Procfile                    # perintah release & web untuk PWS
+├── manage.py
+├── Procfile
 ├── README.md
-└── requirements.txt            # daftar dependensi
+└── requirements.txt
 ```
 
-Direktori `env/` (virtual environment), berkas `.env` serta `.env.prod`, dan `db.sqlite3` tercantum di `.gitignore` sehingga tidak ada di repository github.
+Direktori `env/` (virtual environment), file `.env` serta `.env.prod`, dan `db.sqlite3` tercantum di `.gitignore` sehingga tidak ada di repository github.
 
-Markup tiap section saya taruh terpisah di `templates/sections/`. Berkas itu di-include oleh landing page maupun oleh halaman sectionnya sendiri, jadi kalau mau ubah tampilan satu section saya cukup edit satu berkas.
+HTML tiap section ditaruh terpisah di `templates/sections/`. Kemudian di-include oleh landing page maupun oleh halaman sectionnya sendiri, jadi kalau mau ubah tampilan satu section cukup edit filenya di `templates/sections/`.
 
 ## Instruksi Setup
 Perintah dijalankan dari direktori root repositori. Contoh di bawah pakai Git Bash di Windows, jadi aktivasi virtual environment silakan menyesuaikan shell masing-masing.
@@ -213,17 +196,26 @@ AI Chat Session Link: https://claude.ai/code/session_019PEDDe9qcKUsx8KD1kFoD1
 
 
 #### Progres
-
+- Seluruh berkas HTML yang identik sudah di-refactor dengan melakukan extend dari root HTML template.
+- Menambahkan modul create, update, dan delete untuk model `Achievement`, `Experience`, dan `Project`.
+- Membuat tampilan HTML untuk forms create, update, dan delete tiap model.
+- Forms ditampilkan dan dapat diakses di interface website, dan terdapat `secret_token` (sementara) untuk memastikan bahwa yang melakukan operasi tersebut adalah pemilik website.
 
 #### Pertanyaan Reflektif
-
+1. Karena lebih praktis dan efisien dibandingkan membuat form HTML secara manual.  Django secara otomatis membaca atribut dari model yang sudah ada dan membuatkan form yang sesuai, sehingga tidak perlu menulis setiap elemen `<input>` di HTML secara manual. Selain itu, ModelForm menyediakan sistem validasi bawaan yang lengkap, termasuk pengecekan tipe data, batasan panjang teks, dan field yang wajib diisi (*required*), yang semuanya dilakukan secara otomatis tanpa perlu logika validasi tambahan.
+`{% csrf_token %}` perlu ditambahkan pada form tersebut untuk eamanan aplikasi guna mencegah serangan `Cross-Site Request Forgery (CSRF)`. Token ini memastikan bahwa permintaan POST yang masuk benar-benar berasal dari situs web kita sendiri dan bukan dari situs jahat yang mencoba memalsukan permintaan, sehingga melindungi data pengguna dari manipulasi oleh penyerang. 
+2. Karena ukurannya yang lebih ringkas, parser yang sangat cepat, dan integrasi yang sangat natural dengan JavaScript di sisi frontend. Kemudian, JSON lebih natural karena data disimpan dalam bentuk yang mirip seperti *dictionary*, sedangkan XML memiliki struktur berhierarki dan dikemas dalam tag tertentu (sekilas mirip HTML).
+3. Alurnya di views: user request objek dari model yang diminta, bisa semuanya atau query tertentu saja; kemudian yang kita punya saat ini itu masih berupa Python's `object` dari `Model` terkait, makanya perlu *serialization* terlebih dahulu sebelum mengembalikan data supaya data yang dikembalikan (diterima user) dalam format JSON.
 
 #### AI Disclosure
 Model AI: Gemini 3.1 Pro
 AI Chat Session Link: https://share.gemini.google/r7oa8qGzLtEl
 
 ##### Penggunaan AI
-
+- Membantu memahami bagaimana Django membedakan forms create dan update meskipun menggunakan class Form yang sama.
+- Membantu menentukan data field yang tepat untuk setiap atribut di form.
+- Membantu proses *debugging* ketika terjadi error dalam pengerjaan tutorial 3.
 
 
 ##### Perbaikan Manual
+- Menyesuaikan atribut di forms yang diberikan oleh AI dengan model yang ada di proyek saya.
