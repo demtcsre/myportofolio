@@ -13,11 +13,6 @@ from django.forms import (
 from main.models import Experience, Achievement, Project
 
 class ExperienceForm(ModelForm):
-    secret_code = CharField(
-        label="Secret Code",
-        widget=PasswordInput(attrs={"autocomplete": "off"}),
-    )
-
     class Meta:
         model = Experience
         fields = [
@@ -82,11 +77,6 @@ class ExperienceForm(ModelForm):
         }
 
 class AchievementForm(ModelForm):
-    secret_code = CharField(
-        label="Secret Code",
-        widget=PasswordInput(attrs={"autocomplete": "off"}),
-    )
-
     class Meta:
         model = Achievement
         fields = [
@@ -129,11 +119,6 @@ class AchievementForm(ModelForm):
         }
 
 class ProjectForm(ModelForm):
-    secret_code = CharField(
-        label="Secret Code",
-        widget=PasswordInput(attrs={"autocomplete": "off"}),
-    )
-
     class Meta:
         model = Project
         fields = [

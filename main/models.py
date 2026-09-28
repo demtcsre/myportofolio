@@ -1,5 +1,6 @@
 import uuid
 
+from django.contrib.auth.models import User  # Tambahkan baris ini
 from django.db import models
 
 
@@ -58,6 +59,9 @@ class Project(models.Model):
     url = models.URLField(blank=True)
     description = models.TextField()
     order = models.PositiveIntegerField(default=0)
+    starred_by = models.ManyToManyField(
+        User, related_name="starred_projects", blank=True
+    )
 
     class Meta:
         ordering = ['order', 'name']

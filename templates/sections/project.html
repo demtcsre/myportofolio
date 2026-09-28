@@ -7,47 +7,49 @@
                 <input type="search" name="name" value="{{ name_query }}" placeholder="Search project by name" aria-label="Search project by name">
                 <button type="submit" class="button button-secondary">Search</button>
             </form>
-            <a href="{% url 'main:create_project' %}" class="button">+ Add Project</a>
+            {% if user.is_superuser %}
+                <a href="{% url 'main:create_project' %}" class="button">+ Add Project</a>
+            {% endif %}
         </div>
         {% endif %}
         <ul class="cards">
             {% for project in project_list %}
-            <li class="card">
-                <p class="entry-when">{{ project.kicker }}</p>
-                <h3>{% if project.url %}<a href="{{ project.url }}">{{ project.name }}</a>{% else %}{{ project.name }}{% endif %}</h3>
-                <p class="entry-note">{{ project.description }}</p>
-                {% if standalone %}
-                
-                <div style="display: flex; gap: 0.5rem;flex-wrap: wrap;">
-                    <p class="card-actions">
-                        <a href="{% url 'main:update_project' project.id %}" class="button">Update</a>
-                    </p>
+                <li class="card">
+                    <p class="entry-when">{{ project.kicker }}</p>
+                    <h3>{% if project.url %}<a href="{{ project.url }}">{{ project.name }}</a>{% else %}{{ project.name }}{% endif %}</h3>
+                    <p class="entry-note">{{ project.description }}</p>
+                    {% if standalone %}
+                    <div style="display: flex; gap: 0.5rem;flex-wrap: wrap;">
+                        {% include "forms/project_star.html" with project=project %}
+                        {% if user.is_superuser %}
+                            <p class="card-actions">
+                                <a href="{% url 'main:update_project' project.id %}" class="button">Update</a>
+                            </p>
 
-                    <p class="card-actions">
-                        <button type="button" class="button button-danger" popovertarget="delete-{{ project.id }}">Delete</button>
-                    </p>
-                </div>
+                            <p class="card-actions">
+                                <button type="button" class="button button-danger" popovertarget="delete-{{ project.id }}">Delete</button>
+                            </p>
+                        {% endif %}
+                    </div>
 
-                <div id="delete-{{ project.id }}" popover>
-                    <p>Delete <strong>{{ project.name }}</strong>? This cannot be undone.</p>
-                    <form method="post" action="{% url 'main:delete_project' project.id %}">
-                        {% csrf_token %}
-                        <div class="form-group">
-                            <label for="secret-code-{{ project.id }}">Secret Code</label>
-                            <input type="password" id="secret-code-{{ project.id }}" name="secret_code" autocomplete="off" required>
-                        </div>
-                        <div class="form-actions">
-                            <button type="submit" class="button button-danger">Yes, delete</button>
-                            <button type="button" class="button button-secondary" popovertarget="delete-{{ project.id }}" popovertargetaction="hide">Cancel</button>
-                        </div>
-                    </form>
-                </div>
-                {% endif %}
-            </li>
-            {% empty %}
-            <li class="card">
-                <p class="entry-note">Belum ada data project{% if name_query %} yang cocok dengan &quot;{{ name_query }}&quot;{% endif %}. Tambahkan lewat <a href="{% url 'main:create_project' %}">form ini</a>.</p>
-            </li>
+                        {% if user.is_superuser %}
+                            <div id="delete-{{ project.id }}" popover>
+                                <p>Delete <strong>{{ project.name }}</strong>? This cannot be undone.</p>
+                                <form method="post" action="{% url 'main:delete_project' project.id %}">
+                                    {% csrf_token %}
+                                    <div class="form-actions">
+                                        <button type="submit" class="button button-danger">Yes, delete</button>
+                                        <button type="button" class="button button-secondary" popovertarget="delete-{{ project.id }}" popovertargetaction="hide">Cancel</button>
+                                    </div>
+                                </form>
+                            </div>
+                        {% endif %}
+                    {% endif %}
+                </li>
+                {% empty %}
+                <li class="card">
+                    <p class="entry-note">Belum ada data project{% if name_query %} yang cocok dengan &quot;{{ name_query }}&quot;{% endif %}. Tambahkan lewat <a href="{% url 'main:create_project' %}">form ini</a>.</p>
+                </li>
             {% endfor %}
         </ul>
         {% if standalone %}

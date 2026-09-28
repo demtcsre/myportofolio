@@ -7,7 +7,9 @@
                 <input type="search" name="name" value="{{ name_query }}" placeholder="Search experience by name" aria-label="Search experience by name">
                 <button type="submit" class="button button-secondary">Search</button>
             </form>
-            <a href="{% url 'main:create_experience' %}" class="button">+ Add Experience</a>
+            {% if user.is_superuser %}
+                <a href="{% url 'main:create_experience' %}" class="button">+ Add Experience</a>
+            {% endif %}
         </div>
         {% endif %}
         <ul class="timeline">
@@ -25,15 +27,16 @@
                 
                 {% if standalone %}
                 
-                <div style="display: flex; gap: 0.5rem;flex-wrap: wrap;">
-                    <p class="card-actions">
-                        <a href="{% url 'main:update_experience' experience.id %}" class="button">Update</a>
-                    </p>
+                {% if user.is_superuser %}
+                    <div style="display: flex; gap: 0.5rem;flex-wrap: wrap;">
+                        <p class="card-actions">
+                            <a href="{% url 'main:update_experience' experience.id %}" class="button">Update</a>
+                        </p>
 
-                    <p class="card-actions">
-                        <button type="button" class="button button-danger" popovertarget="delete-{{ experience.id }}">Delete</button>
-                    </p>
-                </div>
+                        <p class="card-actions">
+                            <button type="button" class="button button-danger" popovertarget="delete-{{ experience.id }}">Delete</button>
+                        </p>
+                    </div>
 
                 <div id="delete-{{ experience.id }}" popover>
                     <p>Delete <strong>{{ experience.name }}</strong>? This cannot be undone.</p>
@@ -49,6 +52,7 @@
                         </div>
                     </form>
                 </div>
+                {% endif %}
                 {% endif %}
 
             </li>

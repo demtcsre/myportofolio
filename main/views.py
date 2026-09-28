@@ -1,9 +1,13 @@
-import secrets
+import datetime
+
 from functools import wraps
 
-from django.conf import settings
 from django.contrib import messages
+from django.contrib.auth import login, logout
+from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
+from django.contrib.auth.decorators import login_required 
 from django.core import serializers
+from django.core.exceptions import PermissionDenied 
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
@@ -17,25 +21,49 @@ PROFILE = {
     "bio": "Second-year CS student at Universitas Indonesia, passionate in Cybersecurity and Data Science while also being a teaching assistant in Programming Foundation 1 (DDP1) course.",
 }
 
-def require_secret(view):
-    @wraps(view)
-    def wrapper(request, *args, **kwargs):
-        code = settings.SECRET_CODE
-        if request.method == "POST" and not (
-            code and secrets.compare_digest(request.POST.get("secret_code", ""), code)
-        ):
-            messages.error(request, "Wrong or missing secret code.")
-            return redirect(request.path)
-        return view(request, *args, **kwargs)
+def register(request):
+    form = UserCreationForm(request.POST or None)
 
-    return wrapper
+    if request.method == "POST" and form.is_valid():
+        form.save()
+        messages.success(request, "Akun berhasil dibuat. Silakan login.")
+        return redirect("main:login")
 
+    context = {
+        "name": "Ahmad Rizki Daffaa",
+        "form": form,
+    }
+    return render(request, "auth/register.html", context)
+
+def login_user(request):
+    form = AuthenticationForm(request, data=request.POST or None)
+
+    if request.method == "POST" and form.is_valid():
+        user = form.get_user()
+        login(request, user)
+        response = redirect("main:show_main")
+        response.set_cookie('last_login', datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+        return response
+
+    context = {
+        "name": "Ahmad Rizki Daffaa",
+        "form": form,
+    }
+    return render(request, "auth/login.html", context)
+
+def logout_user(request):
+    logout(request)
+    response = redirect("main:show_main")
+    response.delete_cookie('last_login')
+    return response
 
 def show_main(request):
+    last_login = request.COOKIES.get('last_login', 'Belum ada sesi login / Cookie tidak ditemukan')
     context = PROFILE | {
         "experience_list": Experience.objects.all()[:3],
         "achievement_list": Achievement.objects.all()[:3],
         "project_list": Project.objects.all()[:3],
+        "last_login": last_login,
     }
     return render(request, "index.html", context)
 
@@ -47,7 +75,7 @@ def get_experience_json(request):
     if name_query:
         experiences = experiences.filter(name__icontains=name_query)
 
-    return HttpResponse(serializers.serialize("json", experiences), content_type="application/json")
+    return HttpResponse(serializers.serialize("json", experiences, use_natural_foreign_keys=True), content_type="application/json")
 
 
 def show_experience(request):
@@ -61,7 +89,7 @@ def show_experience(request):
     return render(request, "experience.html", context)
 
 
-@require_secret
+@login_required(login_url="/login/")
 def create_experience(request):
     form = ExperienceForm(request.POST or None)
 
@@ -72,7 +100,7 @@ def create_experience(request):
 
     return render(request, "forms/experiences_form.html", PROFILE | {"form": form})
 
-@require_secret
+@login_required(login_url="/login/")
 def update_experience(request, experience_id):
     experience = get_object_or_404(Experience, pk=experience_id)
     
@@ -92,7 +120,7 @@ def update_experience(request, experience_id):
     }
     return render(request, "forms/experiences_form.html", context)
 
-@require_secret
+@login_required(login_url="/login/")
 def delete_experience(request, experience_id):
     if request.method == "POST":
         get_object_or_404(Experience, pk=experience_id).delete()
@@ -108,7 +136,7 @@ def get_achievement_json(request):
     if name_query:
         achievements = achievements.filter(name__icontains=name_query)
 
-    return HttpResponse(serializers.serialize("json", achievements), content_type="application/json")
+    return HttpResponse(serializers.serialize("json", achievements, use_natural_foreign_keys=True), content_type="application/json")
 
 
 def show_achievement(request):
@@ -122,7 +150,7 @@ def show_achievement(request):
     return render(request, "achievement.html", context)
 
 
-@require_secret
+@login_required(login_url="/login/")
 def create_achievement(request):
     form = AchievementForm(request.POST or None)
 
@@ -133,7 +161,7 @@ def create_achievement(request):
 
     return render(request, "forms/achievements_form.html", PROFILE | {"form": form})
 
-@require_secret
+@login_required(login_url="/login/")
 def update_achievement(request, achievement_id):
     achievement = get_object_or_404(Achievement, pk=achievement_id)
     
@@ -153,7 +181,7 @@ def update_achievement(request, achievement_id):
     }
     return render(request, "forms/achievements_form.html", context)
 
-@require_secret
+@login_required(login_url="/login/")
 def delete_achievement(request, achievement_id):
     if request.method == "POST":
         get_object_or_404(Achievement, pk=achievement_id).delete()
@@ -169,7 +197,7 @@ def get_project_json(request):
     if name_query:
         projects = projects.filter(name__icontains=name_query)
 
-    return HttpResponse(serializers.serialize("json", projects), content_type="application/json")
+    return HttpResponse(serializers.serialize("json", projects, use_natural_foreign_keys=True), content_type="application/json")
 
 
 def show_project(request):
@@ -183,8 +211,11 @@ def show_project(request):
     return render(request, "project.html", context)
 
 
-@require_secret
+@login_required(login_url="/login/")
 def create_project(request):
+    if not request.user.is_superuser:
+        raise PermissionDenied
+
     form = ProjectForm(request.POST or None)
 
     if request.method == "POST" and form.is_valid():
@@ -194,8 +225,11 @@ def create_project(request):
 
     return render(request, "forms/projects_form.html", PROFILE | {"form": form})
 
-@require_secret
+@login_required(login_url="/login/")
 def update_project(request, project_id):
+    if not request.user.is_superuser:
+        raise PermissionDenied
+    
     project = get_object_or_404(Project, pk=project_id)
     
     if request.method == "POST":
@@ -214,10 +248,25 @@ def update_project(request, project_id):
     }
     return render(request, "forms/projects_form.html", context)
 
-@require_secret
+@login_required(login_url="/login/")
 def delete_project(request, project_id):
+    if not request.user.is_superuser:
+        raise PermissionDenied
+    
     if request.method == "POST":
         get_object_or_404(Project, pk=project_id).delete()
         messages.success(request, "Project successfully deleted!")
+
+    return redirect("main:show_project")
+
+@login_required(login_url="/login/")
+def toggle_project_star(request, project_id):
+    project = get_object_or_404(Project, pk=project_id)
+
+    if request.method == "POST":
+        if request.user in project.starred_by.all():
+            project.starred_by.remove(request.user)
+        else:
+            project.starred_by.add(request.user)
 
     return redirect("main:show_project")
