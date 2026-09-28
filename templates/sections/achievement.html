@@ -14,49 +14,49 @@
         {% endif %}
         <ul class="cards">
             {% for achievement in achievement_list %}
-            <li class="card">
-                {% if achievement.certificate %}
-                <a class="cert" href="{{ achievement.certificate }}">
-                    <img src="{{ achievement.certificate }}" alt="Certificate: {{ achievement.title|cut:"·" }}" loading="lazy">
-                </a>
-                {% endif %}
-                <p class="entry-when">{{ achievement.awarded_at|date:'M Y' }}</p>
-                <h3>{{ achievement.title }}</h3>
-                <p class="entry-where">{{ achievement.organizer }}</p>
-                {% if standalone %}
-                
-                {% if user.is_superuser %}
+                <li class="card">
+                    {% if achievement.certificate %}
+                    <a class="cert" href="{{ achievement.certificate }}">
+                        <img src="{{ achievement.certificate }}" alt="Certificate: {{ achievement.title|cut:"·" }}" loading="lazy">
+                    </a>
+                    {% endif %}
+                    <p class="entry-when">{{ achievement.awarded_at|date:'M Y' }}</p>
+                    <h3>{{ achievement.title }}</h3>
+                    <p class="entry-where">{{ achievement.organizer }}</p>
+                    {% if standalone %}
+                    {% if perms.main.change_achievement %}
                     <div style="display: flex; gap: 0.5rem;flex-wrap: wrap;">
+                        {% include "forms/achievement_star.html" with achievement=achievement %}
                         <p class="card-actions">
                             <a href="{% url 'main:update_achievement' achievement.id %}" class="button">Update</a>
                         </p>
 
+                        {% if user.is_superuser %}
                         <p class="card-actions">
                             <button type="button" class="button button-danger" popovertarget="delete-{{ achievement.id }}">Delete</button>
                         </p>
+                        {% endif %}
                     </div>
+                    {% endif %}
 
-                <div id="delete-{{ achievement.id }}" popover>
-                    <p>Delete <strong>{{ achievement.title }}</strong>? This cannot be undone.</p>
-                    <form method="post" action="{% url 'main:delete_achievement' achievement.id %}">
-                        {% csrf_token %}
-                        <div class="form-group">
-                            <label for="secret-code-{{ achievement.id }}">Secret Code</label>
-                            <input type="password" id="secret-code-{{ achievement.id }}" name="secret_code" autocomplete="off" required>
-                        </div>
-                        <div class="form-actions">
-                            <button type="submit" class="button button-danger">Yes, delete</button>
-                            <button type="button" class="button button-secondary" popovertarget="delete-{{ achievement.id }}" popovertargetaction="hide">Cancel</button>
-                        </div>
-                    </form>
-                </div>
-                {% endif %}
-                {% endif %}
-            </li>
-            {% empty %}
-            <li class="card">
-                <p class="entry-note">Belum ada data achievement. Tambahkan lewat <a href="/admin/">Django Admin</a>.</p>
-            </li>
+                    {% if user.is_superuser %}
+                    <div id="delete-{{ achievement.id }}" popover>
+                        <p>Delete <strong>{{ achievement.title }}</strong>? This cannot be undone.</p>
+                        <form method="post" action="{% url 'main:delete_achievement' achievement.id %}">
+                            {% csrf_token %}
+                            <div class="form-actions">
+                                <button type="submit" class="button button-danger">Yes, delete</button>
+                                <button type="button" class="button button-secondary" popovertarget="delete-{{ achievement.id }}" popovertargetaction="hide">Cancel</button>
+                            </div>
+                        </form>
+                    </div>
+                    {% endif %}
+                    {% endif %}
+                </li>
+                {% empty %}
+                <li class="card">
+                    <p class="entry-note">Belum ada data achievement. Tambahkan lewat <a href="/admin/">Django Admin</a>.</p>
+                </li>
             {% endfor %}
         </ul>
         {% if standalone %}

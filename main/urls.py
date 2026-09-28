@@ -18,6 +18,7 @@ from main.views import (
     create_achievement,
     update_achievement,
     delete_achievement,
+    toggle_achievement_star,
     get_achievement_json,
     
     show_experience,
@@ -46,6 +47,7 @@ urlpatterns = [
     path("achievement/add/", create_achievement, name="create_achievement"),
     path('achievement/<uuid:achievement_id>/update/', update_achievement, name='update_achievement'),
     path("achievement/<uuid:achievement_id>/delete/", delete_achievement, name="delete_achievement"),
+    path("achievement/<uuid:achievement_id>/star/", toggle_achievement_star, name="toggle_achievement_star"),
     path("api/achievement/", get_achievement_json, name="get_projeget_achievement_jsonct_json"),
 
     path("project/", show_project, name="show_project"),

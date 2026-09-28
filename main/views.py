@@ -67,7 +67,6 @@ def show_main(request):
     }
     return render(request, "index.html", context)
 
-
 def get_experience_json(request):
     name_query = request.GET.get("name", "").strip()
     experiences = Experience.objects.all()
@@ -76,7 +75,6 @@ def get_experience_json(request):
         experiences = experiences.filter(name__icontains=name_query)
 
     return HttpResponse(serializers.serialize("json", experiences, use_natural_foreign_keys=True), content_type="application/json")
-
 
 def show_experience(request):
     payload = get_experience_json(request).content.decode("utf-8")
@@ -87,7 +85,6 @@ def show_experience(request):
         "name_query": request.GET.get("name", "").strip(),
     }
     return render(request, "experience.html", context)
-
 
 @login_required(login_url="/login/")
 def create_experience(request):
@@ -102,6 +99,9 @@ def create_experience(request):
 
 @login_required(login_url="/login/")
 def update_experience(request, experience_id):
+    if not request.user.has_perm("main.change_experience"):
+        raise PermissionDenied
+    
     experience = get_object_or_404(Experience, pk=experience_id)
     
     if request.method == "POST":
@@ -128,7 +128,6 @@ def delete_experience(request, experience_id):
 
     return redirect("main:show_experience")
 
-
 def get_achievement_json(request):
     name_query = request.GET.get("name", "").strip()
     achievements = Achievement.objects.all()
@@ -137,7 +136,6 @@ def get_achievement_json(request):
         achievements = achievements.filter(name__icontains=name_query)
 
     return HttpResponse(serializers.serialize("json", achievements, use_natural_foreign_keys=True), content_type="application/json")
-
 
 def show_achievement(request):
     payload = get_achievement_json(request).content.decode("utf-8")
@@ -148,7 +146,6 @@ def show_achievement(request):
         "name_query": request.GET.get("name", "").strip(),
     }
     return render(request, "achievement.html", context)
-
 
 @login_required(login_url="/login/")
 def create_achievement(request):
@@ -163,6 +160,9 @@ def create_achievement(request):
 
 @login_required(login_url="/login/")
 def update_achievement(request, achievement_id):
+    if not request.user.has_perm("main.change_achievement"):
+        raise PermissionDenied
+    
     achievement = get_object_or_404(Achievement, pk=achievement_id)
     
     if request.method == "POST":
@@ -189,6 +189,17 @@ def delete_achievement(request, achievement_id):
 
     return redirect("main:show_achievement")
 
+@login_required(login_url="/login/")
+def toggle_achievement_star(request, achievement_id):
+    achievement = get_object_or_404(Achievement, pk=achievement_id)
+
+    if request.method == "POST":
+        if request.user in achievement.starred_by.all():
+            achievement.starred_by.remove(request.user)
+        else:
+            achievement.starred_by.add(request.user)
+
+    return redirect("main:show_achievement")
 
 def get_project_json(request):
     name_query = request.GET.get("name", "").strip()
@@ -199,7 +210,6 @@ def get_project_json(request):
 
     return HttpResponse(serializers.serialize("json", projects, use_natural_foreign_keys=True), content_type="application/json")
 
-
 def show_project(request):
     payload = get_project_json(request).content.decode("utf-8")
     project_list = [project.object for project in serializers.deserialize("json", payload)]
@@ -209,7 +219,6 @@ def show_project(request):
         "name_query": request.GET.get("name", "").strip(),
     }
     return render(request, "project.html", context)
-
 
 @login_required(login_url="/login/")
 def create_project(request):
@@ -227,7 +236,7 @@ def create_project(request):
 
 @login_required(login_url="/login/")
 def update_project(request, project_id):
-    if not request.user.is_superuser:
+    if not request.user.has_perm("main.change_project"):
         raise PermissionDenied
     
     project = get_object_or_404(Project, pk=project_id)

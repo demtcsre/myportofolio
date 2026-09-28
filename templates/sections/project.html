@@ -19,32 +19,34 @@
                     <h3>{% if project.url %}<a href="{{ project.url }}">{{ project.name }}</a>{% else %}{{ project.name }}{% endif %}</h3>
                     <p class="entry-note">{{ project.description }}</p>
                     {% if standalone %}
+                    {% if perms.main.change_project %}
                     <div style="display: flex; gap: 0.5rem;flex-wrap: wrap;">
                         {% include "forms/project_star.html" with project=project %}
-                        {% if user.is_superuser %}
-                            <p class="card-actions">
-                                <a href="{% url 'main:update_project' project.id %}" class="button">Update</a>
-                            </p>
+                        <p class="card-actions">
+                            <a href="{% url 'main:update_project' project.id %}" class="button">Update</a>
+                        </p>
 
-                            <p class="card-actions">
-                                <button type="button" class="button button-danger" popovertarget="delete-{{ project.id }}">Delete</button>
-                            </p>
+                        {% if user.is_superuser %}
+                        <p class="card-actions">
+                            <button type="button" class="button button-danger" popovertarget="delete-{{ project.id }}">Delete</button>
+                        </p>
                         {% endif %}
                     </div>
-
-                        {% if user.is_superuser %}
-                            <div id="delete-{{ project.id }}" popover>
-                                <p>Delete <strong>{{ project.name }}</strong>? This cannot be undone.</p>
-                                <form method="post" action="{% url 'main:delete_project' project.id %}">
-                                    {% csrf_token %}
-                                    <div class="form-actions">
-                                        <button type="submit" class="button button-danger">Yes, delete</button>
-                                        <button type="button" class="button button-secondary" popovertarget="delete-{{ project.id }}" popovertargetaction="hide">Cancel</button>
-                                    </div>
-                                </form>
-                            </div>
-                        {% endif %}
                     {% endif %}
+
+                    {% if user.is_superuser %}
+                    <div id="delete-{{ project.id }}" popover>
+                        <p>Delete <strong>{{ project.name }}</strong>? This cannot be undone.</p>
+                        <form method="post" action="{% url 'main:delete_project' project.id %}">
+                            {% csrf_token %}
+                            <div class="form-actions">
+                                <button type="submit" class="button button-danger">Yes, delete</button>
+                                <button type="button" class="button button-secondary" popovertarget="delete-{{ project.id }}" popovertargetaction="hide">Cancel</button>
+                            </div>
+                        </form>
+                    </div>
+                    {% endif %}
+                {% endif %}
                 </li>
                 {% empty %}
                 <li class="card">

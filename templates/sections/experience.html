@@ -24,37 +24,38 @@
                     <img src="{{ experience.thumbnail }}" alt="Thumbnail for {{ experience.title }}" loading="lazy">
                 </a>
                 {% endif %}
-                
                 {% if standalone %}
-                
-                {% if user.is_superuser %}
+                    {% if perms.main.change_experience %}
                     <div style="display: flex; gap: 0.5rem;flex-wrap: wrap;">
                         <p class="card-actions">
                             <a href="{% url 'main:update_experience' experience.id %}" class="button">Update</a>
                         </p>
 
+                        {% if user.is_superuser %}
                         <p class="card-actions">
                             <button type="button" class="button button-danger" popovertarget="delete-{{ experience.id }}">Delete</button>
                         </p>
+                        {% endif %}
                     </div>
+                    {% endif %}
 
-                <div id="delete-{{ experience.id }}" popover>
-                    <p>Delete <strong>{{ experience.name }}</strong>? This cannot be undone.</p>
-                    <form method="post" action="{% url 'main:delete_experience' experience.id %}">
-                        {% csrf_token %}
-                        <div class="form-group">
-                            <label for="secret-code-{{ experience.id }}">Secret Code</label>
-                            <input type="password" id="secret-code-{{ experience.id }}" name="secret_code" autocomplete="off" required>
-                        </div>
-                        <div class="form-actions">
-                            <button type="submit" class="button button-danger">Yes, delete</button>
-                            <button type="button" class="button button-secondary" popovertarget="delete-{{ experience.id }}" popovertargetaction="hide">Cancel</button>
-                        </div>
-                    </form>
-                </div>
+                    {% if user.is_superuser %}
+                    <div id="delete-{{ experience.id }}" popover>
+                        <p>Delete <strong>{{ experience.name }}</strong>? This cannot be undone.</p>
+                        <form method="post" action="{% url 'main:delete_experience' experience.id %}">
+                            {% csrf_token %}
+                            <div class="form-group">
+                                <label for="secret-code-{{ experience.id }}">Secret Code</label>
+                                <input type="password" id="secret-code-{{ experience.id }}" name="secret_code" autocomplete="off" required>
+                            </div>
+                            <div class="form-actions">
+                                <button type="submit" class="button button-danger">Yes, delete</button>
+                                <button type="button" class="button button-secondary" popovertarget="delete-{{ experience.id }}" popovertargetaction="hide">Cancel</button>
+                            </div>
+                        </form>
+                    </div>
+                    {% endif %}
                 {% endif %}
-                {% endif %}
-
             </li>
             {% empty %}
             <li class="entry">
