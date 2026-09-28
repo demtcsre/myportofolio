@@ -194,7 +194,6 @@ AI Chat Session Link: https://claude.ai/code/session_019PEDDe9qcKUsx8KD1kFoD1
 
 ### Tugas 3
 
-
 #### Progres
 - Seluruh berkas HTML yang identik sudah di-refactor dengan melakukan extend dari root HTML template.
 - Menambahkan modul create, update, dan delete untuk model `Achievement`, `Experience`, dan `Project`.
@@ -219,3 +218,20 @@ AI Chat Session Link: https://share.gemini.google/r7oa8qGzLtEl
 
 ##### Perbaikan Manual
 - Menyesuaikan atribut di forms yang diberikan oleh AI dengan model yang ada di proyek saya.
+
+### Tugas 3
+
+
+#### Progres
+- Terdapat 4 roles user: guest, regular, editor, dan superuser/admin
+- Guest hanya dapat melihat tanpa melakukan interaksi terhadap CRUD maupun star project/achievement
+- Regular (registered) user dapat memberi star pada project/achievement
+- Editor (registered) user basically regular user + ada perms edit/update seluruh model
+
+#### AI Disclosure
+Model AI: Gemini 3.1 Pro
+AI Chat Session Link: https://share.gemini.google/w6IV8lwo8vuo
+
+##### Penggunaan AI
+- Diskusi mengenai best practice Django terhadap problem di Tugas Individu 4 (adanya role Editor)
+- Debug minor syntax mistakes.
