@@ -4,7 +4,7 @@
         {% if standalone %}
         <div class="achievement-bar">
             <form class="achievement-search" method="get" action="{% url 'main:show_achievement' %}">
-                <input type="search" name="name" value="{{ name_query }}" placeholder="Search achievement by name" aria-label="Search achievement by name">
+                <input type="search" name="title" value="{{ title_query }}" placeholder="Search achievement by name" aria-label="Search achievement by name">
                 <button type="submit" class="button button-secondary">Search</button>
             </form>
             {% if user.is_superuser %}

@@ -8,8 +8,9 @@ from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.contrib.auth.decorators import login_required 
 from django.core import serializers
 from django.core.exceptions import PermissionDenied 
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.views.decorators.http import require_POST
 
 from main.models import Achievement, Experience, Project
 from main.forms import AchievementForm, ExperienceForm, ProjectForm
@@ -68,11 +69,11 @@ def show_main(request):
     return render(request, "index.html", context)
 
 def get_experience_json(request):
-    name_query = request.GET.get("name", "").strip()
+    title_query = request.GET.get("title", "").strip()
     experiences = Experience.objects.all()
 
-    if name_query:
-        experiences = experiences.filter(name__icontains=name_query)
+    if title_query:
+        experiences = experiences.filter(title__icontains=title_query)
 
     return HttpResponse(serializers.serialize("json", experiences, use_natural_foreign_keys=True), content_type="application/json")
 
@@ -82,7 +83,7 @@ def show_experience(request):
 
     context = PROFILE | {
         "experience_list": experience_list,
-        "name_query": request.GET.get("name", "").strip(),
+        "title_query": request.GET.get("title", "").strip(),
     }
     return render(request, "experience.html", context)
 
@@ -129,11 +130,11 @@ def delete_experience(request, experience_id):
     return redirect("main:show_experience")
 
 def get_achievement_json(request):
-    name_query = request.GET.get("name", "").strip()
+    title_query = request.GET.get("title", "").strip()
     achievements = Achievement.objects.all()
 
-    if name_query:
-        achievements = achievements.filter(name__icontains=name_query)
+    if title_query:
+        achievements = achievements.filter(title__icontains=title_query)
 
     return HttpResponse(serializers.serialize("json", achievements, use_natural_foreign_keys=True), content_type="application/json")
 
@@ -143,7 +144,7 @@ def show_achievement(request):
 
     context = PROFILE | {
         "achievement_list": achievement_list,
-        "name_query": request.GET.get("name", "").strip(),
+        "title_query": request.GET.get("title", "").strip(),
     }
     return render(request, "achievement.html", context)
 
@@ -203,20 +204,37 @@ def toggle_achievement_star(request, achievement_id):
 
 def get_project_json(request):
     name_query = request.GET.get("name", "").strip()
-    projects = Project.objects.all()
+    projects = Project.objects.prefetch_related('starred_by').all()
 
     if name_query:
         projects = projects.filter(name__icontains=name_query)
 
-    return HttpResponse(serializers.serialize("json", projects, use_natural_foreign_keys=True), content_type="application/json")
+    data = []
+    for project in projects:
+        starred_users = project.starred_by.all()
+        is_starred = request.user in starred_users if request.user.is_authenticated else False
+        starred_by_names = ", ".join([u.username for u in starred_users])
+
+        data.append({
+            "pk": str(project.id),
+            "fields": {
+                "name": project.name,
+                "kicker": project.kicker,
+                "url": project.url,
+                "description": project.description,
+                "order": project.order,
+                "star_count": starred_users.count(),
+                "is_starred": is_starred,
+                "starred_by_names": starred_by_names,
+            }
+        })
+
+    return JsonResponse(data, safe=False)
 
 def show_project(request):
-    payload = get_project_json(request).content.decode("utf-8")
-    project_list = [project.object for project in serializers.deserialize("json", payload)]
-
     context = PROFILE | {
-        "project_list": project_list,
         "name_query": request.GET.get("name", "").strip(),
+        "form": ProjectForm(),
     }
     return render(request, "project.html", context)
 
@@ -233,6 +251,24 @@ def create_project(request):
         return redirect("main:show_project")
 
     return render(request, "forms/projects_form.html", PROFILE | {"form": form})
+
+@require_POST
+def create_project_ajax(request):
+    if not request.user.is_superuser:
+        return JsonResponse(
+            {"message": "Hanya pemilik portofolio yang dapat menambahkan proyek."},
+            status=403,
+        )
+
+    form = ProjectForm(request.POST)
+    if form.is_valid():
+        project = form.save()
+        return JsonResponse(
+            {"message": "Proyek berhasil ditambahkan.", "pk": str(project.id)},
+            status=201,
+        )
+
+    return JsonResponse({"errors": form.errors.get_json_data()}, status=400)
 
 @login_required(login_url="/login/")
 def update_project(request, project_id):

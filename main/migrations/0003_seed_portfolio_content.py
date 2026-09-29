@@ -84,9 +84,6 @@ PROJECTS = [
 SEED = [('Experience', EXPERIENCES), ('Achievement', ACHIEVEMENTS), ('Project', PROJECTS)]
 
 
-# ponytail: derive the primary keys instead of letting uuid4 roll fresh ones per
-# database. Local SQLite and the PWS Postgres then agree on ids, so a dumpdata /
-# loaddata between them updates these rows instead of duplicating them.
 SITE = 'https://ahmad-rizki53-myportofolio.pws.cs.ui.ac.id/'
 
 

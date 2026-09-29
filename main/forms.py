@@ -1,3 +1,4 @@
+from django.core.exceptions import ValidationError
 from django.forms import (
     CharField,
     ModelForm,
@@ -9,6 +10,7 @@ from django.forms import (
     DateInput,
     Select
 )
+from django.utils.html import strip_tags
 
 from main.models import Experience, Achievement, Project
 
@@ -168,3 +170,15 @@ class ProjectForm(ModelForm):
                 }
             ),
         }
+
+    def clean_name(self):
+        name = strip_tags(self.cleaned_data["name"]).strip()
+        if not name:
+            raise ValidationError("Nama proyek tidak boleh hanya berisi tag HTML.")
+        return name
+
+    def clean_kicker(self):
+        return strip_tags(self.cleaned_data["kicker"]).strip()
+
+    def clean_description(self):
+        return strip_tags(self.cleaned_data["description"]).strip()

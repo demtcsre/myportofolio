@@ -4,6 +4,7 @@ import django
 from dotenv import load_dotenv
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
@@ -18,6 +19,11 @@ if not USER_PASSWORD or not ADMIN_PASSWORD:
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "portofolio.settings")
 django.setup()
 from django.contrib.auth.models import User
+from main.models import Project
+
+E2E_PREFIX = "E2E "
+E2E_PROJECT = E2E_PREFIX + "Proyek AJAX"
+XSS_PAYLOAD = '<img src="x" onerror="window.__xss = true">'
 
 
 def setup_users():
@@ -32,6 +38,38 @@ def setup_users():
     admin.is_superuser = True
     admin.is_staff = True
     admin.save()
+
+
+def card_names(driver):
+    return driver.execute_script(
+        "const grid = document.getElementById('grid');"
+        "if (!grid || grid.classList.contains('hide')) return [];"
+        "return [...grid.querySelectorAll('li.card h3')].map(h => h.textContent.trim());"
+    )
+
+
+def toast_is(title):
+    return lambda d: d.execute_script(
+        "const t = document.getElementById('toast-component');"
+        "return t.classList.contains('toast-show') && document.getElementById('toast-title').textContent;"
+    ) == title
+
+
+def modal_open(driver):
+    return driver.execute_script(
+        "return document.getElementById('add-project-modal').matches(':popover-open');"
+    )
+
+
+def fill_project_modal(driver, wait, name, description):
+    driver.find_element(By.CSS_SELECTOR, "button[popovertarget='add-project-modal']").click()
+    wait.until(modal_open)
+    fields = {"id_name": name, "id_kicker": "Dibuat oleh E2E", "id_description": description}
+    for field_id, value in fields.items():
+        element = driver.find_element(By.ID, field_id)
+        element.clear()
+        element.send_keys(value)
+    driver.find_element(By.CSS_SELECTOR, "#project-form button[type='submit']").click()
 
 
 def main():
@@ -78,6 +116,31 @@ def main():
         assert "403" in driver.title or "Forbidden" in driver.page_source
         print("[PASS] Otorisasi user biasa dibatasi (403)")
 
+        Project.objects.create(name=E2E_PREFIX + XSS_PAYLOAD, description=XSS_PAYLOAD, order=999)
+        driver.get(f"{base_url}/project/")
+        wait.until(lambda d: len(card_names(d)) == Project.objects.count())
+        driver.execute_script("window.__noReload = true;")
+        assert E2E_PREFIX + XSS_PAYLOAD in card_names(driver)
+        assert not driver.find_elements(By.CSS_SELECTOR, "#grid img[src='x']")
+        assert not driver.find_elements(By.ID, "add-project-modal")
+        assert not driver.find_elements(By.CSS_SELECTOR, "button[popovertarget='add-project-modal']")
+        assert driver.find_elements(By.CSS_SELECTOR, "#grid .button-star")
+        print("[PASS] Daftar proyek dimuat via AJAX, user biasa tidak melihat modal tambah")
+
+        keyword = Project.objects.first().name[:4]
+        search = driver.find_element(By.ID, "search-input")
+        search.send_keys(keyword)
+        expected = list(Project.objects.filter(name__icontains=keyword).values_list("name", flat=True))
+        wait.until(lambda d: card_names(d) == expected)
+        search.send_keys(Keys.CONTROL, "a")
+        search.send_keys(Keys.BACKSPACE)
+        wait.until(lambda d: len(card_names(d)) == Project.objects.count())
+        assert driver.execute_script("return window.__noReload === true;")
+        print("[PASS] Pencarian debounce berjalan tanpa reload halaman")
+
+        assert not driver.execute_script("return window.__xss === true;")
+        print("[PASS] Data JSON di-escape sebelum masuk innerHTML (XSS tidak jalan)")
+
         # 4. Cek akses superuser ke form tambah proyek
         driver.get(f"{base_url}/logout/")
         wait.until(EC.presence_of_element_located((By.XPATH, "//a[contains(@href, '/login/')]")))
@@ -92,6 +155,37 @@ def main():
         wait.until(EC.presence_of_element_located((By.CLASS_NAME, "project-form")))
         print("[PASS] Akses superuser ke form proyek berhasil")
 
+        driver.get(f"{base_url}/project/")
+        wait.until(lambda d: len(card_names(d)) == Project.objects.count())
+        driver.execute_script("window.__noReload = true;")
+
+        fill_project_modal(driver, wait, E2E_PROJECT, "Proyek dari pengujian E2E.")
+        wait.until(toast_is("Berhasil"))
+        wait.until(lambda d: not modal_open(d))
+        wait.until(lambda d: E2E_PROJECT in card_names(d))
+        assert Project.objects.filter(name=E2E_PROJECT).exists()
+        assert driver.execute_script("return window.__noReload === true;")
+        print("[PASS] Proyek baru ditambahkan via modal AJAX, toast sukses tampil")
+
+        fill_project_modal(driver, wait, XSS_PAYLOAD, "Harus ditolak server.")
+        wait.until(toast_is("Gagal menambahkan proyek"))
+        message = driver.find_element(By.ID, "toast-message").text
+        assert "tidak boleh hanya berisi tag HTML" in message, message
+        assert modal_open(driver)
+        driver.find_element(By.CSS_SELECTOR, "#add-project-modal .button-secondary").click()
+        wait.until(lambda d: not modal_open(d))
+        print("[PASS] Input berbahaya ditolak server, toast error tampil")
+
+        card = driver.find_element(
+            By.XPATH, f"//ul[@id='grid']/li[.//h3[normalize-space()='{E2E_PROJECT}']]"
+        )
+        card.find_element(By.CSS_SELECTOR, ".button-danger").click()
+        wait.until(EC.alert_is_present()).accept()
+        wait.until(lambda _: not Project.objects.filter(name=E2E_PROJECT).exists())
+        wait.until(lambda d: len(card_names(d)) == Project.objects.count())
+        assert E2E_PROJECT not in card_names(driver)
+        print("[PASS] Hapus proyek dengan confirm() berhasil")
+
         # 5. Cek logout dan penghapusan cookie
         driver.get(f"{base_url}/logout/")
         wait.until(EC.presence_of_element_located((By.XPATH, "//a[contains(@href, '/login/')]")))
@@ -103,6 +197,7 @@ def main():
 
     finally:
         driver.quit()
+        Project.objects.filter(name__startswith=E2E_PREFIX).delete()
 
 
 if __name__ == "__main__":

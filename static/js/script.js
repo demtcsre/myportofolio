@@ -1,16 +1,12 @@
 var root = document.documentElement;
 var theme = document.querySelector('.theme');
 
-
 // |----------------------------------------------------------------| //
 // | LOGIC BEHIND SWITCH LIGHT/DARK MODE WHEN THE BUTTON IS CLICKED | //
 // |----------------------------------------------------------------| //
 function scheme() {
     return root.style.colorScheme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
 }
-
-// ponytail: CSS can't read a manually overridden color-scheme, so the icon
-// swap rides on this attribute instead of a second source of truth.
 function syncIcon() {
     theme.dataset.scheme = scheme();
 }
@@ -23,7 +19,6 @@ theme.addEventListener('click', function () {
     syncIcon();
 });
 
-
 // |--------------------------------------------------------------------| //
 // | BAGIAN NAVBAR DI HEADER KETIKA DALAM MOBILE DISPLAY (WIDTH <760PX) | //
 // |--------------------------------------------------------------------| //
@@ -34,8 +29,6 @@ toggle.addEventListener('click', function () {
     toggle.setAttribute('aria-expanded', toggle.getAttribute('aria-expanded') !== 'true');
 });
 
-// ponytail: close on link tap only. No outside-click / Escape handler until the
-// menu grows past four anchors.
 panel.addEventListener('click', function (e) {
     if (e.target.tagName === 'A') toggle.setAttribute('aria-expanded', 'false');
 });
@@ -55,8 +48,6 @@ function label(d) {
     return MONTHS[d.m] + ' ' + d.y;
 }
 
-// ponytail: months only, inclusive of both endpoints (Aug -> Sep = 2 mos).
-// Roll up to "1 yr 4 mos" once an entry passes a year.
 document.querySelectorAll('.entry-when[data-start]').forEach(function (el) {
     var start = ym(el.dataset.start);
     var end = el.dataset.end ? ym(el.dataset.end) : { y: now.getFullYear(), m: now.getMonth() };
@@ -86,7 +77,6 @@ lightbox.addEventListener('click', function () {
     lightbox.close();
     document.body.classList.remove('no-scroll');
 });
-
 
 // |-------------------------| //
 // | BAGIAN ANIMASI SNOWFALL | //
