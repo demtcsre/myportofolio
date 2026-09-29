@@ -24,12 +24,13 @@
                     <h3>{{ achievement.title }}</h3>
                     <p class="entry-where">{{ achievement.organizer }}</p>
                     {% if standalone %}
-                    {% if perms.main.change_achievement %}
                     <div style="display: flex; gap: 0.5rem;flex-wrap: wrap;">
                         {% include "forms/achievement_star.html" with achievement=achievement %}
+                        {% if perms.main.change_project %}
                         <p class="card-actions">
                             <a href="{% url 'main:update_achievement' achievement.id %}" class="button">Update</a>
                         </p>
+                        {% endif %}
 
                         {% if user.is_superuser %}
                         <p class="card-actions">
@@ -37,7 +38,6 @@
                         </p>
                         {% endif %}
                     </div>
-                    {% endif %}
 
                     {% if user.is_superuser %}
                     <div id="delete-{{ achievement.id }}" popover>
