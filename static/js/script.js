@@ -33,6 +33,17 @@ panel.addEventListener('click', function (e) {
     if (e.target.tagName === 'A') toggle.setAttribute('aria-expanded', 'false');
 });
 
+// Tutup panel dengan Escape atau klik di luar panel
+document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') toggle.setAttribute('aria-expanded', 'false');
+});
+
+document.addEventListener('click', function (e) {
+    if (!panel.contains(e.target) && !toggle.contains(e.target)) {
+        toggle.setAttribute('aria-expanded', 'false');
+    }
+});
+
 // |---------------------------------------------------------------| //
 // | BAGIAN DURASI DI SECTION EXPERIENCE, CALCULATED NOT HARDCODED | //
 // |---------------------------------------------------------------| //

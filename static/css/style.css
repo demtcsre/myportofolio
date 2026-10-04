@@ -102,7 +102,8 @@ span.nav-user{
     color: var(--accent);
 }
 
-/* Tombol logout (form POST) tampil seperti link navbar lainnya */
+/* Baris akun (nama user + Logout): di desktop menyatu dengan link navbar lain */
+.nav-account,
 .logout-form {
     display: contents;
 }
@@ -112,6 +113,7 @@ span.nav-user{
     border: 0;
     background: none;
     font-family: inherit;
+    line-height: inherit;
     cursor: pointer;
 }
 
@@ -871,6 +873,13 @@ textarea {
         display: inline-flex;
     }
 
+    /* Area sentuh 44px */
+    .theme,
+    .nav-toggle {
+        width: 2.75rem;
+        height: 2.75rem;
+    }
+
     .nav-panel {
         display: none;
         position: absolute;
@@ -883,10 +892,24 @@ textarea {
         padding: 0.25rem 1.5rem 1rem;
         background-color: var(--surface);
         border-bottom: 1px solid var(--line);
+        box-shadow: 0 0.75rem 1.25rem -0.75rem rgba(0, 0, 0, 0.35);
     }
 
     .nav-toggle[aria-expanded="true"] + .nav-panel {
         display: flex;
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+        .nav-toggle[aria-expanded="true"] + .nav-panel {
+            animation: nav-panel-in 150ms ease-out;
+        }
+    }
+
+    @keyframes nav-panel-in {
+        from {
+            opacity: 0;
+            transform: translateY(-0.25rem);
+        }
     }
 
     .site-header nav {
@@ -894,11 +917,39 @@ textarea {
         gap: 0;
     }
 
-    .site-header nav a,
-    .site-header nav button {
+    .site-header nav a {
         padding: 0.7rem 0;
         text-align: center;
         border-top: 1px solid var(--line);
+    }
+
+    /* Nama user di kiri, tombol Logout di kanan, dipisah dari link navigasi */
+    .nav-account {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 0.75rem 0 0.25rem;
+        border-top: 1px solid var(--line);
+    }
+
+    span.nav-user {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: var(--text-muted);
+    }
+
+    .site-header nav .nav-account button {
+        min-height: 2.75rem;
+        padding: 0 1.25rem;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+    }
+
+    .site-header nav .nav-account button:hover {
+        border-color: var(--accent);
     }
 
     .theme {
