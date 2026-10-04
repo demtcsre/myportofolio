@@ -166,6 +166,7 @@ def get_achievement_json(request):
 def show_achievement(request):
     context = PROFILE | {
         "title_query": request.GET.get("title", "").strip(),
+        "form": AchievementForm(),
     }
     return render(request, "achievement.html", context)
 
@@ -182,6 +183,24 @@ def create_achievement(request):
         return redirect("main:show_achievement")
 
     return render(request, "forms/achievements_form.html", PROFILE | {"form": form})
+
+@require_POST
+def create_achievement_ajax(request):
+    if not request.user.is_superuser:
+        return JsonResponse(
+            {"message": "Hanya pemilik portofolio yang dapat menambahkan achievement."},
+            status=403,
+        )
+
+    form = AchievementForm(request.POST)
+    if form.is_valid():
+        achievement = form.save()
+        return JsonResponse(
+            {"message": "Achievement berhasil ditambahkan.", "pk": str(achievement.id)},
+            status=201,
+        )
+
+    return JsonResponse({"errors": form.errors.get_json_data()}, status=400)
 
 @login_required(login_url="/login/")
 def update_achievement(request, achievement_id):

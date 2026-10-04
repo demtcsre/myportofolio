@@ -17,6 +17,7 @@ from main.views import (
     
     show_achievement,
     create_achievement,
+    create_achievement_ajax,
     update_achievement,
     delete_achievement,
     toggle_achievement_star,
@@ -46,6 +47,7 @@ urlpatterns = [
 
     path("achievement/", show_achievement, name="show_achievement"),
     path("achievement/add/", create_achievement, name="create_achievement"),
+    path("achievement/add-ajax/", create_achievement_ajax, name="create_achievement_ajax"),
     path('achievement/<uuid:achievement_id>/update/', update_achievement, name='update_achievement'),
     path("achievement/<uuid:achievement_id>/delete/", delete_achievement, name="delete_achievement"),
     path("achievement/<uuid:achievement_id>/star/", toggle_achievement_star, name="toggle_achievement_star"),

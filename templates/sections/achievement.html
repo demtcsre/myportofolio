@@ -13,7 +13,7 @@
                 <button type="submit" class="button button-secondary">Search</button>
             </form>
             {% if user.is_superuser %}
-                <a href="{% url 'main:create_achievement' %}" class="button">+ Add Achievement</a>
+            <button type="button" class="button" popovertarget="add-achievement-modal">+ Add Achievement</button>
             {% endif %}
         </div>
 

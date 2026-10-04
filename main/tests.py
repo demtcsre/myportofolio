@@ -165,6 +165,8 @@ class AchievementPageTest(TestCase):
         self.assertContains(response, 'const CAN_EDIT = "false"')
         self.assertContains(response, "const SEARCH_DEBOUNCE_DELAY = 300;")
         self.assertContains(response, 'searchInput.addEventListener("input"')
+        self.assertNotContains(response, 'id="add-achievement-modal"')
+        self.assertNotContains(response, 'popovertarget="add-achievement-modal"')
 
     def test_update_button_follows_change_achievement_perm(self):
         editor = User.objects.create_user("editor", password="pw")
@@ -172,6 +174,20 @@ class AchievementPageTest(TestCase):
         self.client.force_login(editor)
 
         self.assertContains(self.client.get(self.url), 'const CAN_EDIT = "true"')
+
+    def test_add_modal_is_only_for_superuser(self):
+        self.client.force_login(User.objects.create_user("biasa", password="pw"))
+        self.assertNotContains(self.client.get(self.url), 'id="add-achievement-modal"')
+
+        self.client.force_login(User.objects.create_superuser("owner", password="pw"))
+        response = self.client.get(self.url)
+
+        self.assertTemplateUsed(response, "components/achievement_form_modal.html")
+        self.assertContains(response, 'popovertarget="add-achievement-modal"')
+        self.assertContains(response, '<form id="achievement-form"')
+        self.assertContains(response, reverse("main:create_achievement_ajax"))
+        for field in ("title", "organizer", "awarded_at", "certificate"):
+            self.assertContains(response, 'name="{}"'.format(field))
 
 
 class AchievementJsonTest(TestCase):
@@ -216,6 +232,55 @@ class AchievementJsonTest(TestCase):
 
         self.client.post(star_url)
         self.assertFalse(self.fields(self.achievement)["is_starred"])
+
+
+class AchievementAjaxCreateTest(TestCase):
+    def setUp(self):
+        self.url = reverse("main:create_achievement_ajax")
+        self.payload = {
+            "title": "Achievement AJAX",
+            "organizer": "Buatan test",
+            "awarded_at": "2026-09-01",
+            "certificate": "https://example.com/cert.png",
+        }
+
+    def test_only_superuser_with_csrf_can_post(self):
+        response = self.client.post(self.url, self.payload)
+        self.assertEqual(response.status_code, 403)
+        self.assertIn("message", response.json())
+
+        self.client.force_login(User.objects.create_user("biasa", password="pw"))
+        self.assertEqual(self.client.post(self.url, self.payload).status_code, 403)
+
+        client = self.client_class(enforce_csrf_checks=True)
+        client.force_login(User.objects.create_superuser("owner", password="pw"))
+        self.assertEqual(client.post(self.url, self.payload).status_code, 403)
+
+        self.assertEqual(Achievement.objects.count(), 3)
+
+    def test_superuser_create_and_validation(self):
+        self.client.force_login(User.objects.create_superuser("owner", password="pw"))
+
+        self.assertEqual(self.client.get(self.url).status_code, 405)
+
+        response = self.client.post(self.url, self.payload)
+        self.assertEqual(response.status_code, 201)
+        achievement = Achievement.objects.get(pk=response.json()["pk"])
+        self.assertEqual((achievement.title, achievement.organizer), ("Achievement AJAX", "Buatan test"))
+
+        response = self.client.post(self.url, self.payload | {"title": "   "})
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json()["errors"]["title"][0]["code"], "required")
+
+        response = self.client.post(self.url, self.payload | {"awarded_at": ""})
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("awarded_at", response.json()["errors"])
+
+        response = self.client.post(self.url, self.payload | {"certificate": "javascript:alert(1)"})
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("certificate", response.json()["errors"])
+
+        self.assertEqual(Achievement.objects.count(), 4)
 
 
 class ProjectPageTest(TestCase):

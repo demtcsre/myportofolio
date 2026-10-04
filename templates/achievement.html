@@ -5,6 +5,10 @@
 {% block content %}
     {% include "sections/achievement.html" with standalone=True %}
 
+    {% if user.is_superuser %}
+        {% include "components/achievement_form_modal.html" %}
+    {% endif %}
+
     <script>
     // Konfigurasi
     const BASE_ACHIEVEMENTS_ENDPOINT = "{% url 'main:get_achievement_json' %}";
@@ -148,6 +152,51 @@
         clearTimeout(searchDebounceTimer);
         searchAchievements();
     });
+
+    function closeAchievementModal() {
+        document.getElementById("add-achievement-modal").hidePopover();
+    }
+
+    const CREATE_ACHIEVEMENT_ENDPOINT = "{% url 'main:create_achievement_ajax' %}";
+    const achievementForm = document.getElementById('achievement-form');
+
+    // Mengirim data form ke server
+    async function addAchievement(event) {
+        event.preventDefault();
+
+        const submitButton = achievementForm.querySelector('button[type="submit"]');
+        submitButton.disabled = true;
+
+        try {
+            const response = await fetch(CREATE_ACHIEVEMENT_ENDPOINT, {
+                method: 'POST',
+                headers: { 'X-CSRFToken': getCookie('csrftoken') },
+                body: new FormData(achievementForm),
+            });
+            const result = await response.json().catch(() => ({}));
+
+            if (response.ok) {
+                achievementForm.reset();
+                closeAchievementModal();
+                showToast('Berhasil', 'Achievement baru berhasil ditambahkan!', 'success');
+                fetchAchievements(searchInput.value.trim());
+            } else {
+                const errorMessages = result.errors
+                    ? Object.values(result.errors).flat().map(error => error.message)
+                    : [result.message || `Terjadi kesalahan (status ${response.status}).`];
+                showToast('Gagal menambahkan achievement', errorMessages.join(' '), 'error');
+            }
+        } catch (error) {
+            console.error('Error adding achievement:', error);
+            showToast('Gagal menambahkan achievement', 'Tidak dapat terhubung ke server. Silakan coba lagi.', 'error');
+        } finally {
+            submitButton.disabled = false;
+        }
+    }
+
+    if (achievementForm) {
+        achievementForm.addEventListener('submit', addAchievement);
+    }
 
     // Start application
     fetchAchievements(searchInput.value.trim());
