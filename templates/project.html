@@ -3,11 +3,11 @@
 {% block title %}Project - {{ name }}{% endblock %}
 
 {% block content %}
-        {% include "sections/project.html" with standalone=True %}
+    {% include "sections/project.html" with standalone=True %}
 
-        {% if user.is_superuser %}
-            {% include "components/project_form_modal.html" %}
-        {% endif %}
+    {% if user.is_superuser %}
+        {% include "components/project_form_modal.html" %}
+    {% endif %}
 
     <script>
     // Konfigurasi

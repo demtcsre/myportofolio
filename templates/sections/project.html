@@ -4,11 +4,16 @@
         {% if standalone %}
         <div class="project-bar">
             <form id="project-search-form" class="project-search">
-                <input type="search" id="search-input" name="name" value="{{ name_query }}" placeholder="Search project by name" aria-label="Search project by name">
+                <input type="search"
+                       id="search-input"
+                       name="name"
+                       value="{{ name_query }}"
+                       placeholder="Search project by name"
+                       aria-label="Search project by name">
                 <button type="submit" class="button button-secondary">Search</button>
             </form>
             {% if user.is_superuser %}
-                <button type="button" class="button" popovertarget="add-project-modal">+ Add Project</button>
+            <button type="button" class="button" popovertarget="add-project-modal">+ Add Project</button>
             {% endif %}
         </div>
 
@@ -18,48 +23,49 @@
         <ul id="grid" class="cards hide"></ul>
         {% else %}
         <ul class="cards">
-            {% for project in project_list %}
-                <li class="card">
-                    <p class="entry-when">{{ project.kicker }}</p>
-                    <h3>{% if project.url %}<a href="{{ project.url }}">{{ project.name }}</a>{% else %}{{ project.name }}{% endif %}</h3>
-                    <p class="entry-note">{{ project.description }}</p>
-                    {% if standalone %}
-                    <div style="display: flex; gap: 0.5rem;flex-wrap: wrap;">
-                        {% include "forms/project_star.html" with project=project %}
-                        {% if perms.main.change_project %}
-                        <p class="card-actions">
-                            <a href="{% url 'main:update_project' project.id %}" class="button">Update</a>
-                        </p>
-                        {% endif %}
-
-                        {% if user.is_superuser %}
-                        <p class="card-actions">
-                            <button type="button" class="button button-danger" popovertarget="delete-{{ project.id }}">Delete</button>
-                        </p>
-                        {% endif %}
-                    </div>
+        {% for project in project_list %}
+            <li class="card">
+                <p class="entry-when">{{ project.kicker }}</p>
+                <h3>{% if project.url %}<a href="{{ project.url }}">{{ project.name }}</a>{% else %}{{ project.name }}{% endif %}</h3>
+                <p class="entry-note">{{ project.description }}</p>
+                {% if standalone %}
+                <div style="display: flex; gap: 0.5rem;flex-wrap: wrap;">
+                    {% include "components/project_star.html" with project=project %}
+                    {% if perms.main.change_project %}
+                    <p class="card-actions">
+                        <a href="{% url 'main:update_project' project.id %}" class="button">Update</a>
+                    </p>
+                    {% endif %}
 
                     {% if user.is_superuser %}
-                    <div id="delete-{{ project.id }}" popover>
-                        <p>Delete <strong>{{ project.name }}</strong>? This cannot be undone.</p>
-                        <form method="post" action="{% url 'main:delete_project' project.id %}">
-                            {% csrf_token %}
-                            <div class="form-actions">
-                                <button type="submit" class="button button-danger">Yes, delete</button>
-                                <button type="button" class="button button-secondary" popovertarget="delete-{{ project.id }}" popovertargetaction="hide">Cancel</button>
-                            </div>
-                        </form>
-                    </div>
+                    <p class="card-actions">
+                        <button type="button" class="button button-danger" popovertarget="delete-{{ project.id }}">Delete</button>
+                    </p>
                     {% endif %}
+                </div>
+
+                {% if user.is_superuser %}
+                <div id="delete-{{ project.id }}" popover>
+                    <p>Delete <strong>{{ project.name }}</strong>? This cannot be undone.</p>
+                    <form method="post" action="{% url 'main:delete_project' project.id %}">
+                        {% csrf_token %}
+                        <div class="form-actions">
+                            <button type="submit" class="button button-danger">Yes, delete</button>
+                            <button type="button" class="button button-secondary" popovertarget="delete-{{ project.id }}" popovertargetaction="hide">Cancel</button>
+                        </div>
+                    </form>
+                </div>
                 {% endif %}
-                </li>
-                {% empty %}
-                <li class="card">
-                    <p class="entry-note">Belum ada data project{% if name_query %} yang cocok dengan &quot;{{ name_query }}&quot;{% endif %}. Tambahkan lewat <a href="{% url 'main:create_project' %}">form ini</a>.</p>
-                </li>
-            {% endfor %}
+            {% endif %}
+            </li>
+            {% empty %}
+            <li class="card">
+                <p class="entry-note">Belum ada data project{% if name_query %} yang cocok dengan &quot;{{ name_query }}&quot;{% endif %}. Tambahkan lewat <a href="{% url 'main:create_project' %}">form ini</a>.</p>
+            </li>
+        {% endfor %}
         </ul>
         {% endif %}
+        
         {% if standalone %}
         <p class="entry-link"><a href="{% url 'main:show_main' %}#project">&larr; Back to portfolio</a></p>
         {% else %}

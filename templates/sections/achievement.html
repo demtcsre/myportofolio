@@ -25,7 +25,7 @@
                     <p class="entry-where">{{ achievement.organizer }}</p>
                     {% if standalone %}
                     <div style="display: flex; gap: 0.5rem;flex-wrap: wrap;">
-                        {% include "forms/achievement_star.html" with achievement=achievement %}
+                        {% include "components/achievement_star.html" with achievement=achievement %}
                         {% if perms.main.change_project %}
                         <p class="card-actions">
                             <a href="{% url 'main:update_achievement' achievement.id %}" class="button">Update</a>
