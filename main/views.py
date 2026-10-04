@@ -137,20 +137,42 @@ def delete_experience(request, experience_id):
 
 def get_achievement_json(request):
     title_query = request.GET.get("title", "").strip()
-    achievements = Achievement.objects.all()
+    achievements = Achievement.objects.prefetch_related('starred_by').all()
 
     if title_query:
         achievements = achievements.filter(title__icontains=title_query)
 
-    return HttpResponse(serializers.serialize("json", achievements, use_natural_foreign_keys=True), content_type="application/json")
+    data = []
+    for achievement in achievements:
+        starred_users = achievement.starred_by.all()
+        is_starred = request.user in starred_users if request.user.is_authenticated else False
+        starred_by_names = ", ".join([u.username for u in starred_users])
+
+        data.append({
+            "pk": str(achievement.id),
+            "fields": {
+                "title": achievement.title,
+                "organizer": achievement.organizer,
+                "awarded_at": achievement.awarded_at.strftime("%b %Y"),
+                "certificate": achievement.certificate,
+                "star_count": starred_users.count(),
+                "is_starred": is_starred,
+                "starred_by_names": starred_by_names,
+            }
+        })
+
+    return JsonResponse(data, safe=False)
 
 def show_achievement(request):
-    payload = get_achievement_json(request).content.decode("utf-8")
-    achievement_list = [achievement.object for achievement in serializers.deserialize("json", payload)]
+    title_query = request.GET.get("title", "").strip()
+    achievement_list = Achievement.objects.all()
+
+    if title_query:
+        achievement_list = achievement_list.filter(title__icontains=title_query)
 
     context = PROFILE | {
         "achievement_list": achievement_list,
-        "title_query": request.GET.get("title", "").strip(),
+        "title_query": title_query,
     }
     return render(request, "achievement.html", context)
 

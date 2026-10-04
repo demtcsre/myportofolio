@@ -176,6 +176,50 @@ class AchievementPageTest(TestCase):
         self.assertEqual([item["fields"]["title"] for item in response.json()], [POLRI])
 
 
+class AchievementJsonTest(TestCase):
+    def setUp(self):
+        self.url = reverse("main:get_achievement_json")
+        self.achievement = Achievement.objects.get(title=POLRI)
+        self.other = Achievement.objects.get(title=FINDIT)
+
+    def fields(self, achievement):
+        return next(item["fields"] for item in self.client.get(self.url).json() if item["pk"] == str(achievement.id))
+
+    def test_json_lists_filters_and_orders_achievements(self):
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "application/json")
+        self.assertEqual(
+            [item["fields"]["title"] for item in response.json()],
+            [a.title for a in Achievement.objects.all()],
+        )
+        self.assertTrue({"Aug 2026", "May 2026"} <= {item["fields"]["awarded_at"] for item in response.json()})
+        self.assertEqual(self.fields(self.achievement)["certificate"], self.achievement.certificate)
+        self.assertEqual(
+            [item["fields"]["title"] for item in self.client.get(self.url, {"title": "polri"}).json()],
+            [POLRI],
+        )
+
+    def test_star_fields_follow_the_viewer_and_the_toggle(self):
+        self.achievement.starred_by.add(User.objects.create_user("a", password="pw"))
+
+        fields = self.fields(self.achievement)
+        self.assertEqual(fields["star_count"], 1)
+        self.assertEqual(fields["starred_by_names"], "a")
+        self.assertFalse(fields["is_starred"])
+
+        self.client.force_login(User.objects.create_user("fan", password="pw"))
+        star_url = reverse("main:toggle_achievement_star", args=[self.achievement.id])
+
+        self.client.post(star_url)
+        self.assertTrue(self.fields(self.achievement)["is_starred"])
+        self.assertFalse(self.fields(self.other)["is_starred"])
+
+        self.client.post(star_url)
+        self.assertFalse(self.fields(self.achievement)["is_starred"])
+
+
 class ProjectPageTest(TestCase):
     def setUp(self):
         self.url = reverse("main:show_project")
