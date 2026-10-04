@@ -51,6 +51,7 @@ def login_user(request):
     }
     return render(request, "auth/login.html", context)
 
+@require_POST
 def logout_user(request):
     logout(request)
     response = redirect("main:show_main")

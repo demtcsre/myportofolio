@@ -608,3 +608,22 @@ class AchievementExperiencePermissionTest(TestCase):
             self.assertEqual(self.client.get(reverse("main:create_" + name)).status_code, 200)
             self.client.post(reverse("main:delete_" + name, args=[row.id]))
             self.assertFalse(type(row).objects.filter(pk=row.id).exists())
+
+
+class LogoutTest(TestCase):
+    def test_logout_only_via_post(self):
+        self.client.force_login(User.objects.create_user("biasa", password="pw"))
+        url = reverse("main:logout")
+
+        self.assertEqual(self.client.get(url).status_code, 405)
+        self.assertIn("_auth_user_id", self.client.session)
+
+        self.assertRedirects(self.client.post(url), reverse("main:show_main"))
+        self.assertNotIn("_auth_user_id", self.client.session)
+
+    def test_navbar_logout_is_a_csrf_protected_form(self):
+        self.client.force_login(User.objects.create_user("biasa", password="pw"))
+        response = self.client.get(reverse("main:show_main"))
+
+        self.assertContains(response, f'<form method="post" action="{reverse("main:logout")}"')
+        self.assertContains(response, "csrfmiddlewaretoken")

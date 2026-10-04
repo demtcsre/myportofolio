@@ -90,14 +90,29 @@ span.nav-user{
     gap: 2rem;
 }
 
-.site-header nav a {
+.site-header nav a,
+.site-header nav button {
     color: var(--ink);
     text-decoration: none;
     font-size: 0.95rem;
 }
 
-.site-header nav a:hover {
+.site-header nav a:hover,
+.site-header nav button:hover {
     color: var(--accent);
+}
+
+/* Tombol logout (form POST) tampil seperti link navbar lainnya */
+.logout-form {
+    display: contents;
+}
+
+.site-header nav button {
+    padding: 0;
+    border: 0;
+    background: none;
+    font-family: inherit;
+    cursor: pointer;
 }
 
 .theme,
@@ -879,7 +894,8 @@ textarea {
         gap: 0;
     }
 
-    .site-header nav a {
+    .site-header nav a,
+    .site-header nav button {
         padding: 0.7rem 0;
         text-align: center;
         border-top: 1px solid var(--line);

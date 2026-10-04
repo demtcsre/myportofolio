@@ -142,7 +142,7 @@ def main():
         print("[PASS] Data JSON di-escape sebelum masuk innerHTML (XSS tidak jalan)")
 
         # 4. Cek akses superuser ke form tambah proyek
-        driver.get(f"{base_url}/logout/")
+        driver.execute_script("document.querySelector('.logout-form button').click();")
         wait.until(EC.presence_of_element_located((By.XPATH, "//a[contains(@href, '/login/')]")))
         driver.get(f"{base_url}/login/")
         wait.until(EC.presence_of_element_located((By.NAME, "username"))).send_keys("demtcsre")
@@ -187,7 +187,7 @@ def main():
         print("[PASS] Hapus proyek dengan confirm() berhasil")
 
         # 5. Cek logout dan penghapusan cookie
-        driver.get(f"{base_url}/logout/")
+        driver.execute_script("document.querySelector('.logout-form button').click();")
         wait.until(EC.presence_of_element_located((By.XPATH, "//a[contains(@href, '/login/')]")))
         cookie_last_login = driver.get_cookie("last_login")
         assert cookie_last_login is None or cookie_last_login["value"] == ""
