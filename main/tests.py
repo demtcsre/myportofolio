@@ -321,8 +321,11 @@ class AchievementJsonTest(TestCase):
         self.assertEqual(fields["starred_by_names"], "a")
         self.assertFalse(fields["is_starred"])
 
-        self.client.force_login(User.objects.create_user("fan", password="pw"))
         star_url = reverse("main:toggle_achievement_star", args=[self.achievement.id])
+        self.assertRedirects(self.client.post(star_url), "/login/?next=" + star_url, fetch_redirect_response=False)
+        self.assertEqual(self.fields(self.achievement)["star_count"], 1)
+
+        self.client.force_login(User.objects.create_user("fan", password="pw"))
 
         self.client.post(star_url)
         self.assertTrue(self.fields(self.achievement)["is_starred"])
@@ -467,8 +470,11 @@ class ProjectJsonTest(TestCase):
         self.assertEqual(fields["starred_by_names"], "a")
         self.assertFalse(fields["is_starred"])
 
-        self.client.force_login(User.objects.create_user("fan", password="pw"))
         star_url = reverse("main:toggle_project_star", args=[self.project.id])
+        self.assertRedirects(self.client.post(star_url), "/login/?next=" + star_url, fetch_redirect_response=False)
+        self.assertEqual(self.fields(self.project)["star_count"], 1)
+
+        self.client.force_login(User.objects.create_user("fan", password="pw"))
 
         self.client.post(star_url)
         self.assertTrue(self.fields(self.project)["is_starred"])
