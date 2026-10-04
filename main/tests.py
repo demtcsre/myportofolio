@@ -357,3 +357,20 @@ class ProjectPermissionTest(TestCase):
         self.assertFalse(Project.objects.filter(pk=self.project.id).exists())
 
         self.assertEqual(self.client.post(reverse("main:delete_project", args=[uuid.uuid4()])).status_code, 404)
+
+
+class AchievementExperiencePermissionTest(TestCase):
+    def test_only_superuser_can_create_and_delete(self):
+        rows = {"achievement": Achievement.objects.first(), "experience": Experience.objects.first()}
+
+        self.client.force_login(User.objects.create_user("biasa", password="pw"))
+        for name, row in rows.items():
+            self.assertEqual(self.client.get(reverse("main:create_" + name)).status_code, 403)
+            self.assertEqual(self.client.post(reverse("main:delete_" + name, args=[row.id])).status_code, 403)
+            self.assertTrue(type(row).objects.filter(pk=row.id).exists())
+
+        self.client.force_login(User.objects.create_superuser("owner", password="pw"))
+        for name, row in rows.items():
+            self.assertEqual(self.client.get(reverse("main:create_" + name)).status_code, 200)
+            self.client.post(reverse("main:delete_" + name, args=[row.id]))
+            self.assertFalse(type(row).objects.filter(pk=row.id).exists())

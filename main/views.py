@@ -89,6 +89,9 @@ def show_experience(request):
 
 @login_required(login_url="/login/")
 def create_experience(request):
+    if not request.user.is_superuser:
+        raise PermissionDenied
+
     form = ExperienceForm(request.POST or None)
 
     if request.method == "POST" and form.is_valid():
@@ -123,6 +126,9 @@ def update_experience(request, experience_id):
 
 @login_required(login_url="/login/")
 def delete_experience(request, experience_id):
+    if not request.user.is_superuser:
+        raise PermissionDenied
+
     if request.method == "POST":
         get_object_or_404(Experience, pk=experience_id).delete()
         messages.success(request, "Experience successfully deleted!")
@@ -150,6 +156,9 @@ def show_achievement(request):
 
 @login_required(login_url="/login/")
 def create_achievement(request):
+    if not request.user.is_superuser:
+        raise PermissionDenied
+
     form = AchievementForm(request.POST or None)
 
     if request.method == "POST" and form.is_valid():
@@ -184,6 +193,9 @@ def update_achievement(request, achievement_id):
 
 @login_required(login_url="/login/")
 def delete_achievement(request, achievement_id):
+    if not request.user.is_superuser:
+        raise PermissionDenied
+
     if request.method == "POST":
         get_object_or_404(Achievement, pk=achievement_id).delete()
         messages.success(request, "Achievement successfully deleted!")
