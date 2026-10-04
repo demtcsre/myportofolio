@@ -3,5 +3,147 @@
 {% block title %}Experience - {{ name }}{% endblock %}
 
 {% block content %}
-        {% include "sections/experience.html" with standalone=True %}
+    {% include "sections/experience.html" with standalone=True %}
+
+    <script>
+    // Konfigurasi
+    const BASE_EXPERIENCES_ENDPOINT = "{% url 'main:get_experience_json' %}";
+    const IS_SUPERUSER = "{{ user.is_superuser|yesno:'true,false' }}" === "true";
+    const CAN_EDIT = "{{ perms.main.change_experience|yesno:'true,false' }}" === "true";
+    let experiencesAbortController;
+
+    // Elemen DOM
+    const loadingState = document.getElementById('loading');
+    const errorState = document.getElementById('error');
+    const emptyState = document.getElementById('empty');
+    const gridContainer = document.getElementById('grid');
+    const searchForm = document.getElementById('experience-search-form');
+    const searchInput = document.getElementById('search-input');
+    const SEARCH_DEBOUNCE_DELAY = 300;
+    let searchDebounceTimer;
+
+    // Menyembunyikan/Menampilkan section halaman
+    function displayPageSection({ showLoading = false, showError = false, showEmpty = false, showGrid = false }) {
+        loadingState.classList.toggle('hide', !showLoading);
+        errorState.classList.toggle('hide', !showError);
+        emptyState.classList.toggle('hide', !showEmpty);
+        gridContainer.classList.toggle('hide', !showGrid);
+    }
+
+    // Membuat elemen entry experience
+    function buildExperienceEntryElement(item) {
+        const experience = item.fields;
+        const experienceId = item.pk;
+
+        const entryElement = document.createElement('li');
+        entryElement.className = 'entry';
+
+        const organizationHtml = experience.organization
+            ? `${escapeHtml(experience.organization)} &middot; `
+            : '';
+
+        const thumbnailHtml = experience.thumbnail
+            ? `<a class="cert" href="${escapeHtml(experience.thumbnail)}">
+                <img src="${escapeHtml(experience.thumbnail)}" alt="Thumbnail for ${escapeHtml(experience.title)}" loading="lazy">
+            </a>`
+            : '';
+
+        // Dummy UUID digunakan untuk digantikan oleh ID asli dari data JSON
+        const updateUrl = "{% url 'main:update_experience' '00000000-0000-0000-0000-000000000000' %}"
+            .replace('00000000-0000-0000-0000-000000000000', experienceId);
+        const deleteUrl = "{% url 'main:delete_experience' '00000000-0000-0000-0000-000000000000' %}"
+            .replace('00000000-0000-0000-0000-000000000000', experienceId);
+
+        const updateHtml = CAN_EDIT
+            ? `<p class="card-actions">
+                <a href="${updateUrl}" class="button">Update</a>
+            </p>`
+            : '';
+
+        const deleteHtml = IS_SUPERUSER
+            ? `<form method="post" action="${deleteUrl}" class="card-actions">
+                {% csrf_token %}
+                <button type="submit" class="button button-danger" onclick="return confirm('Delete this experience? This cannot be undone.');">Delete</button>
+            </form>`
+            : '';
+
+        // Komponen entry
+        entryElement.innerHTML = `
+            <p class="entry-when"></p>
+            <h3>${escapeHtml(experience.title)}</h3>
+            <p class="entry-where">${organizationHtml}${escapeHtml(experience.category)}</p>
+            <p class="entry-note">${escapeHtml(experience.description)}</p>
+            ${thumbnailHtml}
+            <div style="display: flex; gap: 0.5rem;flex-wrap: wrap;">
+                ${updateHtml}
+                ${deleteHtml}
+            </div>
+        `;
+
+        // Label tanggal dan durasi dihitung oleh fillEntryWhen dari static/js/script.js
+        const whenElement = entryElement.querySelector('.entry-when');
+        whenElement.dataset.start = experience.started_at;
+        if (experience.ended_at) whenElement.dataset.end = experience.ended_at;
+        fillEntryWhen(whenElement);
+
+        return entryElement;
+    }
+
+    // Fetch data experience
+    async function fetchExperiences(searchQuery = "") {
+        if (experiencesAbortController) experiencesAbortController.abort();
+        experiencesAbortController = new AbortController();
+
+        try {
+            displayPageSection({ showLoading: true });
+
+            const url = searchQuery ? `${BASE_EXPERIENCES_ENDPOINT}?title=${encodeURIComponent(searchQuery)}` : BASE_EXPERIENCES_ENDPOINT;
+
+            const response = await fetch(url, {
+                headers: { 'Accept': 'application/json' },
+                signal: experiencesAbortController.signal,
+            });
+
+            if (!response.ok) throw new Error('Failed to fetch data');
+
+            const experienceData = await response.json();
+
+            if (experienceData.length === 0) {
+                displayPageSection({ showEmpty: true });
+            } else {
+                gridContainer.innerHTML = '';
+                experienceData.forEach(item => {
+                    gridContainer.appendChild(buildExperienceEntryElement(item));
+                });
+                displayPageSection({ showGrid: true });
+            }
+        } catch (error) {
+            if (error.name === 'AbortError') return;
+            console.error('Error loading experiences:', error);
+            displayPageSection({ showError: true });
+        }
+    }
+
+    // Event Handlers untuk Form Search
+    function searchExperiences() {
+        fetchExperiences(searchInput.value.trim());
+    }
+
+    searchInput.addEventListener("input", function() {
+        clearTimeout(searchDebounceTimer);
+
+        searchDebounceTimer = setTimeout(function() {
+            searchExperiences();
+        }, SEARCH_DEBOUNCE_DELAY);
+    });
+
+    searchForm.addEventListener("submit", function(event) {
+        event.preventDefault(); // Mencegah reload halaman
+        clearTimeout(searchDebounceTimer);
+        searchExperiences();
+    });
+
+    // Start application setelah script.js (defer) dimuat, karena fillEntryWhen berasal dari sana
+    document.addEventListener('DOMContentLoaded', searchExperiences);
+    </script>
 {% endblock %}

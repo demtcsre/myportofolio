@@ -3,15 +3,25 @@
         <h2 class="section-title">Experience</h2>
         {% if standalone %}
         <div class="experience-bar">
-            <form class="experience-search" method="get" action="{% url 'main:show_experience' %}">
-                <input type="search" name="title" value="{{ title_query }}" placeholder="Search experience by name" aria-label="Search experience by name">
+            <form id="experience-search-form" class="experience-search">
+                <input type="search"
+                       id="search-input"
+                       name="title"
+                       value="{{ title_query }}"
+                       placeholder="Search experience by name"
+                       aria-label="Search experience by name">
                 <button type="submit" class="button button-secondary">Search</button>
             </form>
             {% if user.is_superuser %}
                 <a href="{% url 'main:create_experience' %}" class="button">+ Add Experience</a>
             {% endif %}
         </div>
-        {% endif %}
+
+        <p id="loading" class="entry-note hide">Memuat experiences...</p>
+        <p id="error" class="entry-note hide">Gagal memuat data experiences. Silakan coba lagi.</p>
+        <p id="empty" class="entry-note hide">Belum ada experience yang ditambahkan atau ditemukan.</p>
+        <ul id="grid" class="timeline hide"></ul>
+        {% else %}
         <ul class="timeline">
             {% for experience in experience_list %}
             <li class="entry">
@@ -24,38 +34,6 @@
                     <img src="{{ experience.thumbnail }}" alt="Thumbnail for {{ experience.title }}" loading="lazy">
                 </a>
                 {% endif %}
-                {% if standalone %}
-                    {% if perms.main.change_experience %}
-                    <div style="display: flex; gap: 0.5rem;flex-wrap: wrap;">
-                        <p class="card-actions">
-                            <a href="{% url 'main:update_experience' experience.id %}" class="button">Update</a>
-                        </p>
-
-                        {% if user.is_superuser %}
-                        <p class="card-actions">
-                            <button type="button" class="button button-danger" popovertarget="delete-{{ experience.id }}">Delete</button>
-                        </p>
-                        {% endif %}
-                    </div>
-                    {% endif %}
-
-                    {% if user.is_superuser %}
-                    <div id="delete-{{ experience.id }}" popover>
-                        <p>Delete <strong>{{ experience.name }}</strong>? This cannot be undone.</p>
-                        <form method="post" action="{% url 'main:delete_experience' experience.id %}">
-                            {% csrf_token %}
-                            <div class="form-group">
-                                <label for="secret-code-{{ experience.id }}">Secret Code</label>
-                                <input type="password" id="secret-code-{{ experience.id }}" name="secret_code" autocomplete="off" required>
-                            </div>
-                            <div class="form-actions">
-                                <button type="submit" class="button button-danger">Yes, delete</button>
-                                <button type="button" class="button button-secondary" popovertarget="delete-{{ experience.id }}" popovertargetaction="hide">Cancel</button>
-                            </div>
-                        </form>
-                    </div>
-                    {% endif %}
-                {% endif %}
             </li>
             {% empty %}
             <li class="entry">
@@ -63,6 +41,8 @@
             </li>
             {% endfor %}
         </ul>
+        {% endif %}
+
         {% if standalone %}
         <p class="entry-link"><a href="{% url 'main:show_main' %}#experience">&larr; Back to portfolio</a></p>
         {% else %}

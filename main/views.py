@@ -6,9 +6,8 @@ from django.contrib import messages
 from django.contrib.auth import login, logout
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.contrib.auth.decorators import login_required 
-from django.core import serializers
 from django.core.exceptions import PermissionDenied 
-from django.http import HttpResponse, JsonResponse
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
@@ -75,14 +74,25 @@ def get_experience_json(request):
     if title_query:
         experiences = experiences.filter(title__icontains=title_query)
 
-    return HttpResponse(serializers.serialize("json", experiences, use_natural_foreign_keys=True), content_type="application/json")
+    data = []
+    for experience in experiences:
+        data.append({
+            "pk": str(experience.id),
+            "fields": {
+                "title": experience.title,
+                "organization": experience.organization,
+                "category": experience.get_category_display(),
+                "description": experience.description,
+                "thumbnail": experience.thumbnail,
+                "started_at": experience.started_at.strftime("%Y-%m"),
+                "ended_at": experience.ended_at.strftime("%Y-%m") if experience.ended_at else None,
+            }
+        })
+
+    return JsonResponse(data, safe=False)
 
 def show_experience(request):
-    payload = get_experience_json(request).content.decode("utf-8")
-    experience_list = [experience.object for experience in serializers.deserialize("json", payload)]
-
     context = PROFILE | {
-        "experience_list": experience_list,
         "title_query": request.GET.get("title", "").strip(),
     }
     return render(request, "experience.html", context)

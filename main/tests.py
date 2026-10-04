@@ -103,41 +103,61 @@ class ExperiencePageTest(TestCase):
     def setUp(self):
         self.url = reverse("main:show_experience")
 
-    def test_experience_page_lists_every_row(self):
-        response = self.client.get(self.url)
+    def test_experience_page_is_an_ajax_skeleton(self):
+        response = self.client.get(self.url, {"title": "compfest"})
 
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "experience.html")
         self.assertTemplateUsed(response, "sections/experience.html")
-        self.assertEqual(len(response.context["experience_list"]), 3)
-        for experience in Experience.objects.all():
-            self.assertContains(response, experience.title)
-            self.assertContains(response, experience.description)
-            self.assertContains(response, experience.organization)
-        self.assertContains(response, "Contract")
-        self.assertContains(response, "Seasonal")
-        self.assertNotContains(response, "Volunteer")
-        self.assertContains(response, 'data-start="2026-08"')
-        self.assertNotContains(response, "data-end=")
+        self.assertNotIn("experience_list", response.context)
+        for title in (TA, COMPFEST, NETSOS):
+            self.assertNotContains(response, title)
+        self.assertNotContains(response, "Secret Code")
+        for element_id in ("loading", "error", "empty", "grid", "experience-search-form", "search-input"):
+            self.assertContains(response, 'id="{}"'.format(element_id))
+        self.assertContains(response, reverse("main:get_experience_json"))
+        self.assertEqual(response.context["title_query"], "compfest")
+        self.assertContains(response, 'value="compfest"')
         self.assertContains(response, 'href="{}#experience"'.format(reverse("main:show_main")))
+        for field in ("title", "organization", "category", "description", "thumbnail"):
+            self.assertContains(response, "${escapeHtml(experience.%s)}" % field)
+        self.assertContains(response, "fillEntryWhen(")
+        self.assertContains(response, 'const CAN_EDIT = "false"')
+        self.assertContains(response, "const SEARCH_DEBOUNCE_DELAY = 300;")
+        self.assertContains(response, 'searchInput.addEventListener("input"')
+
+    def test_update_button_follows_change_experience_perm(self):
+        editor = User.objects.create_user("editor", password="pw")
+        editor.user_permissions.add(Permission.objects.get(codename="change_experience"))
+        self.client.force_login(editor)
+
+        self.assertContains(self.client.get(self.url), 'const CAN_EDIT = "true"')
+
+
+class ExperienceJsonTest(TestCase):
+    def setUp(self):
+        self.url = reverse("main:get_experience_json")
+
+    def test_json_lists_filters_and_orders_experiences(self):
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "application/json")
+        self.assertEqual([item["fields"]["title"] for item in response.json()], [TA, COMPFEST, NETSOS])
+
+        ta = response.json()[0]["fields"]
+        self.assertEqual(ta["category"], "Contract")
+        self.assertEqual(ta["started_at"], "2026-08")
+        self.assertIsNone(ta["ended_at"])
+        self.assertIn("Seasonal", [item["fields"]["category"] for item in response.json()])
 
         Experience.objects.filter(title=TA).update(ended_at=datetime.date(2026, 12, 1))
-        self.assertContains(self.client.get(self.url), 'data-end="2026-12"')
+        self.assertEqual(self.client.get(self.url).json()[0]["fields"]["ended_at"], "2026-12")
 
-        Experience.objects.all().delete()
-        self.assertContains(self.client.get(self.url), "Belum ada data experience.")
-
-    def test_search_filters_by_title(self):
-        response = self.client.get(self.url, {"title": "compfest"})
-
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual([e.title for e in response.context["experience_list"]], [COMPFEST])
-        self.assertNotContains(response, NETSOS)
-        self.assertContains(response, 'name="title" value="compfest"')
-
-        response = self.client.get(reverse("main:get_experience_json"), {"title": "compfest"})
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual([item["fields"]["title"] for item in response.json()], [COMPFEST])
+        self.assertEqual(
+            [item["fields"]["title"] for item in self.client.get(self.url, {"title": "compfest"}).json()],
+            [COMPFEST],
+        )
 
 
 class AchievementPageTest(TestCase):

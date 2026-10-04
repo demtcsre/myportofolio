@@ -48,14 +48,17 @@ function label(d) {
     return MONTHS[d.m] + ' ' + d.y;
 }
 
-document.querySelectorAll('.entry-when[data-start]').forEach(function (el) {
+// Dipisah jadi fungsi agar bisa dipanggil ulang oleh card experience yang dirender lewat AJAX
+function fillEntryWhen(el) {
     var start = ym(el.dataset.start);
     var end = el.dataset.end ? ym(el.dataset.end) : { y: now.getFullYear(), m: now.getMonth() };
     var months = (end.y - start.y) * 12 + end.m - start.m + 1;
 
     el.textContent = label(start) + ' \u2014 ' + (el.dataset.end ? label(end) : 'Present') +
         ' \u00B7 ' + months + (months === 1 ? ' month' : ' months');
-});
+}
+
+document.querySelectorAll('.entry-when[data-start]').forEach(fillEntryWhen);
 
 // |--------------------------------------------------------------------------------------| //
 // | BAGIAN IMAGE MODAL/LIGHTBOX, KETIKA GAMBAR SERTIFIKAT DI SECTION ACHIEVEMENT DICLICK | //
