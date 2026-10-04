@@ -94,6 +94,7 @@ def get_experience_json(request):
 def show_experience(request):
     context = PROFILE | {
         "title_query": request.GET.get("title", "").strip(),
+        "form": ExperienceForm(),
     }
     return render(request, "experience.html", context)
 
@@ -110,6 +111,24 @@ def create_experience(request):
         return redirect("main:show_experience")
 
     return render(request, "forms/experiences_form.html", PROFILE | {"form": form})
+
+@require_POST
+def create_experience_ajax(request):
+    if not request.user.is_superuser:
+        return JsonResponse(
+            {"message": "Hanya pemilik portofolio yang dapat menambahkan experience."},
+            status=403,
+        )
+
+    form = ExperienceForm(request.POST)
+    if form.is_valid():
+        experience = form.save()
+        return JsonResponse(
+            {"message": "Experience berhasil ditambahkan.", "pk": str(experience.id)},
+            status=201,
+        )
+
+    return JsonResponse({"errors": form.errors.get_json_data()}, status=400)
 
 @login_required(login_url="/login/")
 def update_experience(request, experience_id):

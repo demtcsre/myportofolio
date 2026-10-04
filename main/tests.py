@@ -125,6 +125,8 @@ class ExperiencePageTest(TestCase):
         self.assertContains(response, 'const CAN_EDIT = "false"')
         self.assertContains(response, "const SEARCH_DEBOUNCE_DELAY = 300;")
         self.assertContains(response, 'searchInput.addEventListener("input"')
+        self.assertNotContains(response, 'id="add-experience-modal"')
+        self.assertNotContains(response, 'popovertarget="add-experience-modal"')
 
     def test_update_button_follows_change_experience_perm(self):
         editor = User.objects.create_user("editor", password="pw")
@@ -132,6 +134,20 @@ class ExperiencePageTest(TestCase):
         self.client.force_login(editor)
 
         self.assertContains(self.client.get(self.url), 'const CAN_EDIT = "true"')
+
+    def test_add_modal_is_only_for_superuser(self):
+        self.client.force_login(User.objects.create_user("biasa", password="pw"))
+        self.assertNotContains(self.client.get(self.url), 'id="add-experience-modal"')
+
+        self.client.force_login(User.objects.create_superuser("owner", password="pw"))
+        response = self.client.get(self.url)
+
+        self.assertTemplateUsed(response, "components/experience_form_modal.html")
+        self.assertContains(response, 'popovertarget="add-experience-modal"')
+        self.assertContains(response, '<form id="experience-form"')
+        self.assertContains(response, reverse("main:create_experience_ajax"))
+        for field in ("title", "organization", "category", "description", "started_at", "ended_at", "thumbnail"):
+            self.assertContains(response, 'name="{}"'.format(field))
 
 
 class ExperienceJsonTest(TestCase):
@@ -157,6 +173,68 @@ class ExperienceJsonTest(TestCase):
         self.assertEqual(
             [item["fields"]["title"] for item in self.client.get(self.url, {"title": "compfest"}).json()],
             [COMPFEST],
+        )
+
+
+class ExperienceAjaxCreateTest(TestCase):
+    def setUp(self):
+        self.url = reverse("main:create_experience_ajax")
+        self.payload = {
+            "title": "Experience AJAX",
+            "organization": "Buatan test",
+            "category": "internship",
+            "description": "Deskripsi.",
+            "started_at": "2026-09-01",
+            "ended_at": "",
+            "thumbnail": "",
+        }
+
+    def test_only_superuser_with_csrf_can_post(self):
+        response = self.client.post(self.url, self.payload)
+        self.assertEqual(response.status_code, 403)
+        self.assertIn("message", response.json())
+
+        self.client.force_login(User.objects.create_user("biasa", password="pw"))
+        self.assertEqual(self.client.post(self.url, self.payload).status_code, 403)
+
+        client = self.client_class(enforce_csrf_checks=True)
+        client.force_login(User.objects.create_superuser("owner", password="pw"))
+        self.assertEqual(client.post(self.url, self.payload).status_code, 403)
+
+        self.assertEqual(Experience.objects.count(), 3)
+
+    def test_superuser_create_and_validation(self):
+        self.client.force_login(User.objects.create_superuser("owner", password="pw"))
+
+        self.assertEqual(self.client.get(self.url).status_code, 405)
+
+        response = self.client.post(self.url, self.payload)
+        self.assertEqual(response.status_code, 201)
+        experience = Experience.objects.get(pk=response.json()["pk"])
+        self.assertEqual((experience.title, experience.category), ("Experience AJAX", "internship"))
+        self.assertTrue(experience.is_ongoing)
+
+        for field, value in (("title", "   "), ("started_at", ""), ("category", "volunteer"), ("thumbnail", "javascript:alert(1)")):
+            response = self.client.post(self.url, self.payload | {field: value})
+            self.assertEqual(response.status_code, 400)
+            self.assertIn(field, response.json()["errors"])
+
+        response = self.client.post(self.url, self.payload | {"title": """<img src="x" onerror="alert('XSS!')">"""})
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            response.json()["errors"]["title"][0]["message"],
+            "Posisi/pekerjaan tidak boleh hanya berisi tag HTML.",
+        )
+        self.assertEqual(Experience.objects.count(), 4)
+
+        response = self.client.post(
+            self.url,
+            self.payload | {"title": "Asdos <b>DDP1</b>", "organization": "<i>Fasilkom</i>", "description": "<script>x</script>ok"},
+        )
+        experience = Experience.objects.get(pk=response.json()["pk"])
+        self.assertEqual(
+            (experience.title, experience.organization, experience.description),
+            ("Asdos DDP1", "Fasilkom", "xok"),
         )
 
 
