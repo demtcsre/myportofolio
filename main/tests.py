@@ -196,7 +196,7 @@ class ProjectPageTest(TestCase):
         self.assertEqual(response.context["name_query"], "pwninit")
         self.assertContains(response, 'value="pwninit"')
         self.assertContains(response, 'href="{}#project"'.format(reverse("main:show_main")))
-        self.assertContains(response, "function escapeHtml(value)")
+        self.assertContains(response, '<script src="/static/js/utils.js"></script>')
         self.assertContains(response, "${escapeHtml(project.name)}")
         self.assertContains(response, "${escapeHtml(project.description)}")
         self.assertNotContains(response, 'id="add-project-modal"')
