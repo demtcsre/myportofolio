@@ -63,14 +63,16 @@ document.querySelectorAll('.entry-when[data-start]').forEach(function (el) {
 var lightbox = document.getElementById('lightbox');
 var lightboxImg = lightbox.querySelector('img');
 
-document.querySelectorAll('.cert').forEach(function (a) {
-    a.addEventListener('click', function (e) {
-        e.preventDefault();
-        lightboxImg.src = a.href;
-        lightboxImg.alt = a.querySelector('img').alt;
-        lightbox.showModal();
-        document.body.classList.add('no-scroll');
-    });
+// Listener dipasang di document agar card yang dirender lewat AJAX juga ikut terpasang
+document.addEventListener('click', function (e) {
+    var a = e.target.closest('.cert');
+    if (!a) return;
+
+    e.preventDefault();
+    lightboxImg.src = a.href;
+    lightboxImg.alt = a.querySelector('img').alt;
+    lightbox.showModal();
+    document.body.classList.add('no-scroll');
 });
 
 lightbox.addEventListener('click', function () {

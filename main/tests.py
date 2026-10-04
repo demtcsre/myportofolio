@@ -144,36 +144,32 @@ class AchievementPageTest(TestCase):
     def setUp(self):
         self.url = reverse("main:show_achievement")
 
-    def test_achievement_page_lists_every_row(self):
-        response = self.client.get(self.url)
+    def test_achievement_page_is_an_ajax_skeleton(self):
+        response = self.client.get(self.url, {"title": "polri"})
 
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "achievement.html")
         self.assertTemplateUsed(response, "sections/achievement.html")
-        self.assertEqual(len(response.context["achievement_list"]), 3)
-        for achievement in Achievement.objects.all():
-            self.assertContains(response, achievement.title)
-            self.assertContains(response, achievement.organizer)
-            self.assertContains(response, achievement.certificate)
-        self.assertContains(response, "Aug 2026")
-        self.assertContains(response, "May 2026")
-        self.assertContains(response, 'alt="Certificate:')
-        self.assertContains(response, 'href="{}#achievement"'.format(reverse("main:show_main")))
-
-        Achievement.objects.all().delete()
-        self.assertContains(self.client.get(self.url), "Belum ada data achievement.")
-
-    def test_search_filters_by_title(self):
-        response = self.client.get(self.url, {"title": "polri"})
-
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual([a.title for a in response.context["achievement_list"]], [POLRI])
+        self.assertNotIn("achievement_list", response.context)
+        self.assertNotContains(response, POLRI)
         self.assertNotContains(response, FINDIT)
-        self.assertContains(response, 'name="title" value="polri"')
+        for element_id in ("loading", "error", "empty", "grid", "achievement-search-form", "search-input"):
+            self.assertContains(response, 'id="{}"'.format(element_id))
+        self.assertContains(response, reverse("main:get_achievement_json"))
+        self.assertEqual(response.context["title_query"], "polri")
+        self.assertContains(response, 'value="polri"')
+        self.assertContains(response, 'href="{}#achievement"'.format(reverse("main:show_main")))
+        self.assertContains(response, "${escapeHtml(achievement.title)}")
+        self.assertContains(response, "${escapeHtml(achievement.organizer)}")
+        self.assertContains(response, "${escapeHtml(achievement.certificate)}")
+        self.assertContains(response, 'const CAN_EDIT = "false"')
 
-        response = self.client.get("/api/achievement/", {"title": "polri"})
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual([item["fields"]["title"] for item in response.json()], [POLRI])
+    def test_update_button_follows_change_achievement_perm(self):
+        editor = User.objects.create_user("editor", password="pw")
+        editor.user_permissions.add(Permission.objects.get(codename="change_achievement"))
+        self.client.force_login(editor)
+
+        self.assertContains(self.client.get(self.url), 'const CAN_EDIT = "true"')
 
 
 class AchievementJsonTest(TestCase):

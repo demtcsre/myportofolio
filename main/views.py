@@ -164,15 +164,8 @@ def get_achievement_json(request):
     return JsonResponse(data, safe=False)
 
 def show_achievement(request):
-    title_query = request.GET.get("title", "").strip()
-    achievement_list = Achievement.objects.all()
-
-    if title_query:
-        achievement_list = achievement_list.filter(title__icontains=title_query)
-
     context = PROFILE | {
-        "achievement_list": achievement_list,
-        "title_query": title_query,
+        "title_query": request.GET.get("title", "").strip(),
     }
     return render(request, "achievement.html", context)
 

@@ -3,5 +3,138 @@
 {% block title %}Achievement - {{ name }}{% endblock %}
 
 {% block content %}
-        {% include "sections/achievement.html" with standalone=True %}
+    {% include "sections/achievement.html" with standalone=True %}
+
+    <script>
+    // Konfigurasi
+    const BASE_ACHIEVEMENTS_ENDPOINT = "{% url 'main:get_achievement_json' %}";
+    const IS_SUPERUSER = "{{ user.is_superuser|yesno:'true,false' }}" === "true";
+    const CAN_EDIT = "{{ perms.main.change_achievement|yesno:'true,false' }}" === "true";
+    let achievementsAbortController;
+
+    // Elemen DOM
+    const loadingState = document.getElementById('loading');
+    const errorState = document.getElementById('error');
+    const emptyState = document.getElementById('empty');
+    const gridContainer = document.getElementById('grid');
+    const searchForm = document.getElementById('achievement-search-form');
+    const searchInput = document.getElementById('search-input');
+
+    // Menyembunyikan/Menampilkan section halaman
+    function displayPageSection({ showLoading = false, showError = false, showEmpty = false, showGrid = false }) {
+        loadingState.classList.toggle('hide', !showLoading);
+        errorState.classList.toggle('hide', !showError);
+        emptyState.classList.toggle('hide', !showEmpty);
+        gridContainer.classList.toggle('hide', !showGrid);
+    }
+
+    // Membuat elemen card achievement
+    function buildAchievementCardElement(item) {
+        const achievement = item.fields;
+        const achievementId = item.pk;
+
+        const cardElement = document.createElement('li');
+        cardElement.className = 'card';
+
+        const certificateHtml = achievement.certificate
+            ? `<a class="cert" href="${escapeHtml(achievement.certificate)}">
+                <img src="${escapeHtml(achievement.certificate)}" alt="Certificate: ${escapeHtml(achievement.title.replaceAll('·', ''))}" loading="lazy">
+            </a>`
+            : '';
+
+        // Dummy UUID digunakan untuk digantikan oleh ID asli dari data JSON
+        const updateUrl = "{% url 'main:update_achievement' '00000000-0000-0000-0000-000000000000' %}"
+            .replace('00000000-0000-0000-0000-000000000000', achievementId);
+        const deleteUrl = "{% url 'main:delete_achievement' '00000000-0000-0000-0000-000000000000' %}"
+            .replace('00000000-0000-0000-0000-000000000000', achievementId);
+        const starUrl = "{% url 'main:toggle_achievement_star' '00000000-0000-0000-0000-000000000000' %}"
+            .replace('00000000-0000-0000-0000-000000000000', achievementId);
+
+        const updateHtml = CAN_EDIT
+            ? `<p class="card-actions">
+                <a href="${updateUrl}" class="button">Update</a>
+            </p>`
+            : '';
+
+        const deleteHtml = IS_SUPERUSER
+            ? `<form method="post" action="${deleteUrl}" class="card-actions">
+                {% csrf_token %}
+                <button type="submit" class="button button-danger" onclick="return confirm('Delete this achievement? This cannot be undone.');">Delete</button>
+            </form>`
+            : '';
+
+        const isStarredClass = achievement.is_starred ? " is-starred" : "";
+        const starText = achievement.is_starred ? "Unstar" : "Star";
+        const starTitle = achievement.star_count > 0
+            ? `Dibintangi oleh ${escapeHtml(achievement.starred_by_names)}`
+            : "Jadilah yang pertama memberi star";
+
+        // Komponen card
+        cardElement.innerHTML = `
+            ${certificateHtml}
+            <p class="entry-when">${escapeHtml(achievement.awarded_at)}</p>
+            <h3>${escapeHtml(achievement.title)}</h3>
+            <p class="entry-where">${escapeHtml(achievement.organizer)}</p>
+            <div style="display: flex; gap: 0.5rem;flex-wrap: wrap;">
+                <form method="post" action="${starUrl}" class="star-form">
+                    {% csrf_token %}
+                    <button type="submit"
+                            class="button button-star${isStarredClass}"
+                            title="${starTitle}">
+                        <span aria-hidden="true">★</span>
+                        ${starText}
+                        <span class="star-count">${achievement.star_count}</span>
+                    </button>
+                </form>
+                ${updateHtml}
+                ${deleteHtml}
+            </div>
+        `;
+        return cardElement;
+    }
+
+    // Fetch data achievement
+    async function fetchAchievements(searchQuery = "") {
+        if (achievementsAbortController) achievementsAbortController.abort();
+        achievementsAbortController = new AbortController();
+
+        try {
+            displayPageSection({ showLoading: true });
+
+            const url = searchQuery ? `${BASE_ACHIEVEMENTS_ENDPOINT}?title=${encodeURIComponent(searchQuery)}` : BASE_ACHIEVEMENTS_ENDPOINT;
+
+            const response = await fetch(url, {
+                headers: { 'Accept': 'application/json' },
+                signal: achievementsAbortController.signal,
+            });
+
+            if (!response.ok) throw new Error('Failed to fetch data');
+
+            const achievementData = await response.json();
+
+            if (achievementData.length === 0) {
+                displayPageSection({ showEmpty: true });
+            } else {
+                gridContainer.innerHTML = '';
+                achievementData.forEach(item => {
+                    gridContainer.appendChild(buildAchievementCardElement(item));
+                });
+                displayPageSection({ showGrid: true });
+            }
+        } catch (error) {
+            if (error.name === 'AbortError') return;
+            console.error('Error loading achievements:', error);
+            displayPageSection({ showError: true });
+        }
+    }
+
+    // Event Handler untuk Form Search
+    searchForm.addEventListener("submit", function(event) {
+        event.preventDefault(); // Mencegah reload halaman
+        fetchAchievements(searchInput.value.trim());
+    });
+
+    // Start application
+    fetchAchievements(searchInput.value.trim());
+    </script>
 {% endblock %}

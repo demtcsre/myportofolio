@@ -3,15 +3,25 @@
         <h2 class="section-title">Achievement</h2>
         {% if standalone %}
         <div class="achievement-bar">
-            <form class="achievement-search" method="get" action="{% url 'main:show_achievement' %}">
-                <input type="search" name="title" value="{{ title_query }}" placeholder="Search achievement by name" aria-label="Search achievement by name">
+            <form id="achievement-search-form" class="achievement-search">
+                <input type="search"
+                       id="search-input"
+                       name="title"
+                       value="{{ title_query }}"
+                       placeholder="Search achievement by name"
+                       aria-label="Search achievement by name">
                 <button type="submit" class="button button-secondary">Search</button>
             </form>
             {% if user.is_superuser %}
                 <a href="{% url 'main:create_achievement' %}" class="button">+ Add Achievement</a>
             {% endif %}
         </div>
-        {% endif %}
+
+        <p id="loading" class="entry-note hide">Memuat achievements...</p>
+        <p id="error" class="entry-note hide">Gagal memuat data achievements. Silakan coba lagi.</p>
+        <p id="empty" class="entry-note hide">Belum ada achievement yang ditambahkan atau ditemukan.</p>
+        <ul id="grid" class="cards hide"></ul>
+        {% else %}
         <ul class="cards">
             {% for achievement in achievement_list %}
                 <li class="card">
@@ -26,7 +36,7 @@
                     {% if standalone %}
                     <div style="display: flex; gap: 0.5rem;flex-wrap: wrap;">
                         {% include "components/achievement_star.html" with achievement=achievement %}
-                        {% if perms.main.change_project %}
+                        {% if perms.main.change_achievement %}
                         <p class="card-actions">
                             <a href="{% url 'main:update_achievement' achievement.id %}" class="button">Update</a>
                         </p>
@@ -59,6 +69,8 @@
                 </li>
             {% endfor %}
         </ul>
+        {% endif %}
+
         {% if standalone %}
         <p class="entry-link"><a href="{% url 'main:show_main' %}#achievement">&larr; Back to portfolio</a></p>
         {% else %}
