@@ -237,6 +237,16 @@ class ExperienceAjaxCreateTest(TestCase):
             ("Asdos DDP1", "Fasilkom", "xok"),
         )
 
+    def test_end_date_cannot_precede_start_date(self):
+        self.client.force_login(User.objects.create_superuser("owner", password="pw"))
+
+        response = self.client.post(self.url, self.payload | {"ended_at": "2026-08-31"})
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("ended_at", response.json()["errors"])
+
+        response = self.client.post(self.url, self.payload | {"ended_at": "2026-09-01"})
+        self.assertEqual(response.status_code, 201)
+
 
 class AchievementPageTest(TestCase):
     def setUp(self):

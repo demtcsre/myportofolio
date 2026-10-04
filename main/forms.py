@@ -90,6 +90,15 @@ class ExperienceForm(ModelForm):
     def clean_description(self):
         return strip_tags(self.cleaned_data["description"]).strip()
 
+    def clean(self):
+        cleaned_data = super().clean()
+        started_at = cleaned_data.get("started_at")
+        ended_at = cleaned_data.get("ended_at")
+
+        if started_at and ended_at and ended_at < started_at:
+            self.add_error("ended_at", "Tanggal selesai tidak boleh sebelum tanggal mulai.")
+        return cleaned_data
+
 class AchievementForm(ModelForm):
     class Meta:
         model = Achievement
