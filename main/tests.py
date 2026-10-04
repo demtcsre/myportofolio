@@ -280,7 +280,20 @@ class AchievementAjaxCreateTest(TestCase):
         self.assertEqual(response.status_code, 400)
         self.assertIn("certificate", response.json()["errors"])
 
+        response = self.client.post(self.url, self.payload | {"title": """<img src="x" onerror="alert('XSS!')">"""})
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            response.json()["errors"]["title"][0]["message"],
+            "Nama penghargaan tidak boleh hanya berisi tag HTML.",
+        )
         self.assertEqual(Achievement.objects.count(), 4)
+
+        response = self.client.post(
+            self.url,
+            self.payload | {"title": "Juara <b>1</b>", "organizer": "<script>x</script>Fasilkom"},
+        )
+        achievement = Achievement.objects.get(pk=response.json()["pk"])
+        self.assertEqual((achievement.title, achievement.organizer), ("Juara 1", "xFasilkom"))
 
 
 class ProjectPageTest(TestCase):
