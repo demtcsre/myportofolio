@@ -235,3 +235,31 @@ AI Chat Session Link: https://share.gemini.google/w6IV8lwo8vuo
 ##### Penggunaan AI
 - Diskusi mengenai best practice Django terhadap problem di Tugas Individu 4 (adanya role Editor)
 - Debug minor syntax mistakes.
+
+### Tugas 5
+
+
+#### Progres
+- Memperbaiki cek `is_superuser` untuk create/delete di achievement dan experience
+- Di halaman tersendiri `achievement` dan `experience`, data diambil dari endpoint JSON menggunakan fetch() dan ditampilkan dengan AJAX
+- Menambahkan `achievement` dan `experience` via modal form dan AJAX seperti `project` pada tutorial 5
+- Menerapkan notifikasi toast pada saat create/add achievement maupun experience baik ketika berhasil maupun gagal
+- Menerapkan debouncing pada proses pencarian di `achievement` dan `experience`
+- Sanitasi input pada form create/add maupun update untuk menghindari kerentanan XSS (Cross-Site Scripting)
+
+#### AI Disclosure
+Model AI: Claude Code Opus 5.5 Medium effort
+AI Chat Session Link: https://claude.ai/code/session_01UMuEeGUEkVJfRUwvdso1Cn
+
+#### Pertanyaan Reflektif
+1.  Debouncing adalah teknik untuk menunda sebuah fungsi hingga suatu jeda waktu berlalu tanpa event baru. Pada fitur pencarian yang menggunakan AJAX, ini penting agar `fetch()` tidak dipanggil di setiap ketikan tetapi hingga pengguna berhenti mengetik sejenak. Hal ini mengurangi jumlah request ke server, sehingga membuat beban server berkurang serta pencarian menjadi lebih efisien. 
+2. `await` berfungsi untuk menunggu hasil dari `fetch()` sebelum kode kita akan dijalankan. Dengan menggunakan `await`, kita dapat memperoleh dan memproses `response` secara berurutan. Kalau ga ada `await`, `fetch()` akan langsung mengembalikan `promise` dan lanjut ke kode berikutnya padahal data belum selesai diterima dan belum bisa langsung digunakan.
+3. Sesuai namanya, XSS (Cross-Site Scripting) merupakan serangan siber dengan cara menyisipkan kode/script berbahaya ke halaman web (biasanya melalui form) sehingga script tersebut dijalankan di browser pengguna. Data dari AJAX/JS lebih beresiko karena sering langsung dimasukkan ke DOM, misal melalui innerHTML, tanpa proses escaping otomatis. Sementara di template Django secara default dilakukan HTML escaping pada data yang ditampilkan sehingga script berbahaya umumnya tidak langsung dieksekusi.
+
+##### Penggunaan AI
+- Diskusi mengenai best practice Django terhadap problem di Tugas Individu 5.
+- Membantu membuat rencana pengerjaan Tugas Individu 5 dan mengerjakan rencana tersebut.
+- Verifikasi ulang efisiensi dari kode yang dibuat serta mengecek autorisasi dan otorisasi website.
+
+##### Perbaikan Manual
+Beberapa kali AI sedikit overkill/overthinking pada saat mengeksekusi rencana tersebut sehingga melakukan perubahan yang tidak diperlukan untuk fitur yang sudah berjalan dengan baik. Saya berperan lebih sebagai supervisor yang mengecek ulang pekerjaan AI dan memintanya untuk memperbaikinya.
