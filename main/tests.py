@@ -163,6 +163,8 @@ class AchievementPageTest(TestCase):
         self.assertContains(response, "${escapeHtml(achievement.organizer)}")
         self.assertContains(response, "${escapeHtml(achievement.certificate)}")
         self.assertContains(response, 'const CAN_EDIT = "false"')
+        self.assertContains(response, "const SEARCH_DEBOUNCE_DELAY = 300;")
+        self.assertContains(response, 'searchInput.addEventListener("input"')
 
     def test_update_button_follows_change_achievement_perm(self):
         editor = User.objects.create_user("editor", password="pw")
